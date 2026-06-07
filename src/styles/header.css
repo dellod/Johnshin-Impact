@@ -1,0 +1,41 @@
+.header-stage {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.header-title {
+    color: white;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-family: 'Neuton', serif;
+    margin: 0;
+    -webkit-text-stroke: 1px rgba(43, 98, 174, 0.9);
+    text-shadow:
+        0 0 8px rgba(80, 140, 255, 0.75),
+        0 0 18px rgba(80, 140, 255, 0.55),
+        0 0 28px rgba(80, 140, 255, 0.35);
+}
+
+.john-logo {
+    width: min(420px, 70vw);
+    max-height: 80vh;
+    object-fit: contain;
+    opacity: 0;
+    transform: translateY(-120px);
+    animation: logoDropFadeIn 4s ease-out forwards;
+}
+
+@keyframes logoDropFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-120px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
