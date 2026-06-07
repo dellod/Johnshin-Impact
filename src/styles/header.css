@@ -19,9 +19,66 @@
         0 0 28px rgba(80, 140, 255, 0.35);
 }
 
+.header-actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.action-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 132px;
+    padding: 11px 22px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-family: 'Neuton', serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.3px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.action-link-primary {
+    color: #f8fbff;
+    background: linear-gradient(135deg, rgba(56, 124, 232, 0.9), rgba(85, 172, 255, 0.88));
+    border: 1px solid rgba(159, 215, 255, 0.85);
+    box-shadow: 0 10px 24px rgba(23, 73, 150, 0.5), 0 0 16px rgba(112, 198, 255, 0.45);
+}
+
+.action-link-secondary {
+    color: #d9ebff;
+    background: rgba(9, 27, 56, 0.52);
+    border: 1px solid rgba(124, 177, 242, 0.75);
+    box-shadow: 0 10px 24px rgba(5, 18, 38, 0.5), inset 0 0 0 1px rgba(197, 227, 255, 0.15);
+    backdrop-filter: blur(3px);
+}
+
+.action-link:hover {
+    transform: translateY(-2px);
+}
+
+.action-link-primary:hover {
+    box-shadow: 0 14px 28px rgba(23, 73, 150, 0.62), 0 0 22px rgba(112, 198, 255, 0.58);
+}
+
+.action-link-secondary:hover {
+    background: rgba(16, 40, 77, 0.68);
+    box-shadow: 0 14px 28px rgba(5, 18, 38, 0.6), inset 0 0 0 1px rgba(197, 227, 255, 0.25);
+}
+
+.action-link:focus-visible {
+    outline: 2px solid #d9eeff;
+    outline-offset: 3px;
+}
+
+.action-link:active {
+    transform: translateY(0);
+}
+
 .john-logo {
     width: min(420px, 70vw);
-    max-height: 80vh;
+    max-height: 56vh;
     object-fit: contain;
     opacity: 0;
     transform: translateY(-120px);
@@ -37,5 +94,18 @@
     100% {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@media (max-width: 560px) {
+    .header-actions {
+        width: min(300px, 72vw);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .action-link {
+        padding: 10px 10px;
+        font-size: 0.95rem;
     }
 }
