@@ -7,6 +7,7 @@ import './styles/app.css';
 
 // Components
 import Header from './components/header';
+import Signup from './components/signup';
 import LoadingScreenVideo from './assets/loading_screen.mp4';
 import LoadingScreenImage from './assets/loading_screen.jpg';
 
@@ -31,6 +32,7 @@ function App() {
         <Router>
             <Routes>
                 <Route path="/" element={<Header />} />
+                <Route path="/signup" element={<Signup />} />
             </Routes>
         </Router>
       </div>
