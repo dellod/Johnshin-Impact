@@ -51,6 +51,19 @@
     color: #ffd3d8;
 }
 
+.signup-progress {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #d9ebff;
+}
+
+.signup-success {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #bfffd8;
+    text-align: center;
+}
+
 .signup-submit {
     color: #eff8ff;
     font-family: 'Neuton', serif;

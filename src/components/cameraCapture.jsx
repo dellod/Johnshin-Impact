@@ -169,8 +169,8 @@ const CameraCapture = ({
                 ) : null}
             </div>
 
-            {cameraError ? <p className="camera-error">{cameraError}</p> : null}
-            {previewUrl ? <p className="camera-success">{successMessage}</p> : null}
+            {/* {cameraError ? <p className="camera-error">{cameraError}</p> : null}
+            {previewUrl ? <p className="camera-success">{successMessage}</p> : null} */}
         </div>
     );
 };
