@@ -8,7 +8,21 @@ import '../styles/signup.css';
 import CameraCapture from './cameraCapture';
 
 // Scripts
-import db from "../scripts/firebase";
+import db, { auth } from "../scripts/firebase";
+
+const buildAuthEmail = (username) => `${username.trim().toLowerCase()}@johnshin.local`;
+
+const getSignupErrorMessage = (error) => {
+    if (error?.code === 'auth/email-already-in-use') {
+        return 'That username is already taken.';
+    }
+
+    if (error?.code === 'auth/invalid-email' || error?.code === 'auth/weak-password') {
+        return 'Unable to create account with that username.';
+    }
+
+    return error?.message || 'Unable to upload image right now.';
+};
 
 const Signup = () =>
 {
@@ -32,6 +46,12 @@ const Signup = () =>
         event.preventDefault();
         if (!photoFile) {
             setSubmitError('Please capture a photo before signing up.');
+            return;
+        }
+
+        const normalizedUsername = username.trim();
+        if (!normalizedUsername) {
+            setSubmitError('Username is required.');
             return;
         }
 
@@ -72,12 +92,26 @@ const Signup = () =>
             }
 
             setSubmitProgress('Saving profile...');
-            const userDocRef = db.collection('users').doc();
+            const authEmail = buildAuthEmail(normalizedUsername);
+            const authCredential = await timeoutPromise(
+                auth.createUserWithEmailAndPassword(authEmail, normalizedUsername),
+                15000,
+                'Creating Firebase auth user timed out.'
+            );
+
+            if (authCredential.user) {
+                await authCredential.user.updateProfile({
+                    displayName: normalizedUsername
+                });
+            }
+
+            const userDocRef = db.collection('users').doc(authCredential.user.uid);
             await timeoutPromise(
                 userDocRef.set({
-                    id: userDocRef.id,
-                    user: username,
-                    favJohn: favJohn,
+                    id: authCredential.user.uid,
+                    authEmail,
+                    username: normalizedUsername,
+                    favJohn: favJohn.trim(),
                     photoUrl: result.secure_url
                 }),
                 15000,
@@ -89,7 +123,7 @@ const Signup = () =>
             console.log('Cloudinary uploaded image URL:', result.secure_url);
         } catch (error) {
             setSubmitProgress('');
-            setSubmitError(error.message || 'Unable to upload image right now.');
+            setSubmitError(getSignupErrorMessage(error));
         } finally {
             setIsSubmitting(false);
         }
