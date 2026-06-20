@@ -1,0 +1,158 @@
+.paimon-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    animation: paimonSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: all;
+}
+
+@keyframes paimonSlideIn {
+    from {
+        transform: translateX(200px) translateY(100px) scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0) translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes paimonFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes paimonSlideOut {
+    from {
+        transform: translateX(0) translateY(0) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(200px) translateY(100px) scale(0.8);
+        opacity: 0;
+    }
+}
+
+.paimon-character {
+    flex-shrink: 0;
+    animation: paimonFloat 3s ease-in-out infinite;
+}
+
+.paimon-image {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    pointer-events: none;
+    user-select: none;
+}
+
+.paimon-tip-bubble {
+    position: relative;
+    background: linear-gradient(135deg, rgba(56, 124, 232, 0.95), rgba(33, 87, 200, 0.95));
+    border: 2px solid rgba(186, 222, 255, 0.7);
+    border-radius: 16px;
+    padding: 16px;
+    max-width: 280px;
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    animation: paimonTipSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.paimon-tip-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 0 solid transparent;
+    border-top: 8px solid rgba(33, 87, 200, 0.95);
+    filter: drop-shadow(-2px 2px 2px rgba(0, 0, 0, 0.2));
+}
+
+@keyframes paimonTipSlideIn {
+    from {
+        transform: translateX(20px) scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.paimon-tip-text {
+    margin: 0;
+    color: #ffffff;
+    font-family: 'Neuton', serif;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.paimon-close-btn {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.paimon-close-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+.paimon-close-btn:focus-visible {
+    outline: 2px solid rgba(186, 222, 255, 0.9);
+    outline-offset: 2px;
+}
+
+/* Responsive: smaller on mobile */
+@media (max-width: 640px) {
+    .paimon-container {
+        bottom: 16px;
+        right: 16px;
+        gap: 8px;
+    }
+
+    .paimon-image {
+        width: 70px;
+        height: 70px;
+    }
+
+    .paimon-tip-bubble {
+        max-width: 220px;
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .paimon-tip-text {
+        font-size: 0.85rem;
+    }
+}

@@ -16,6 +16,8 @@ import Achievements from './components/achievements';
 import Admin from './components/admin';
 import Profile from './components/profile';
 import Leaderboard from './components/leaderboard';
+import Paimon from './components/paimon';
+
 // Scripts
 import { auth } from './scripts/firebase';
 
@@ -86,6 +88,7 @@ function App() {
               <Route path="/profile/:slug" element={<ProfileRoute />} />
               <Route path="/admin" element={<Admin user={user} />} />
             </Routes>
+          <Paimon />
         </div>
       </Router>
     </div>
