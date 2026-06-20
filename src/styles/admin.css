@@ -1,0 +1,140 @@
+.admin-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 72px 16px 32px;
+    box-sizing: border-box;
+}
+
+.admin-panel {
+    width: min(960px, 100%);
+    padding: 24px;
+    border-radius: 18px;
+    border: 1px solid rgba(124, 177, 242, 0.4);
+    background: rgba(9, 27, 56, 0.58);
+    backdrop-filter: blur(5px);
+}
+
+.admin-title {
+    margin: 0 0 20px;
+    color: white;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-family: 'Neuton', serif;
+    text-shadow:
+        0 0 8px rgba(80, 140, 255, 0.75),
+        0 0 18px rgba(80, 140, 255, 0.55),
+        0 0 28px rgba(80, 140, 255, 0.35);
+}
+
+.admin-error,
+.admin-empty-state {
+    color: #eef6ff;
+    font-family: 'Neuton', serif;
+    font-size: 1.15rem;
+}
+
+.admin-error {
+    color: rgba(255, 146, 146, 0.95);
+}
+
+.admin-claims-list {
+    display: grid;
+    gap: 16px;
+}
+
+.admin-claim-card {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 18px;
+    align-items: start;
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(124, 177, 242, 0.35);
+    background: rgba(6, 19, 38, 0.65);
+}
+
+.admin-claim-photo {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 14px;
+    border: 1px solid rgba(169, 210, 255, 0.45);
+}
+
+.admin-claim-content {
+    min-width: 0;
+}
+
+.admin-claim-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.admin-claim-title {
+    margin: 0;
+    color: white;
+    font-family: 'Neuton', serif;
+    font-size: 1.5rem;
+}
+
+.admin-claim-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 196, 77, 0.18);
+    border: 1px solid rgba(255, 210, 112, 0.55);
+    color: #ffe7a8;
+    white-space: nowrap;
+}
+
+.admin-claim-meta {
+    margin: 4px 0;
+    color: rgba(216, 234, 255, 0.9);
+}
+
+.admin-claim-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.admin-action-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-family: 'Neuton', serif;
+    font-size: 1rem;
+    color: #f8fbff;
+    cursor: pointer;
+}
+
+.admin-action-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.admin-action-approve {
+    background: linear-gradient(135deg, rgba(44, 177, 108, 0.95), rgba(87, 214, 153, 0.88));
+}
+
+.admin-action-reject {
+    background: linear-gradient(135deg, rgba(188, 68, 68, 0.95), rgba(238, 103, 103, 0.88));
+}
+
+@media (max-width: 760px) {
+    .admin-claim-card {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-claim-photo {
+        max-width: 320px;
+    }
+
+    .admin-claim-topline {
+        flex-wrap: wrap;
+    }
+}

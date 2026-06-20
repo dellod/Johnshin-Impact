@@ -104,6 +104,11 @@
     transition: background 0.15s ease;
 }
 
+.achievement-item-pending {
+    background: linear-gradient(90deg, rgba(255, 196, 77, 0.16), rgba(56, 124, 232, 0.08));
+    box-shadow: inset 4px 0 0 rgba(255, 196, 77, 0.9);
+}
+
 .achievement-item-clickable {
     cursor: pointer;
 }
@@ -162,6 +167,26 @@
     color: white;
     font-family: 'Neuton', serif;
     font-size: 1.05rem;
+}
+
+.achievement-item-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.achievement-status-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 2px 8px;
+    background: rgba(255, 196, 77, 0.18);
+    border: 1px solid rgba(255, 210, 112, 0.5);
+    color: #ffe7a8;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
 }
 
 .achievement-item-desc {
@@ -339,8 +364,62 @@
 
 .achievement-modal-achievers-list {
     margin: 0;
-    padding-left: 20px;
+    padding-left: 0;
+    list-style: none;
+    display: grid;
+    gap: 10px;
+}
+
+.achievement-modal-achiever-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(124, 177, 242, 0.25);
+    background: rgba(56, 124, 232, 0.1);
+}
+
+.achievement-modal-achiever-profile {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(124, 177, 242, 0.45);
+    flex-shrink: 0;
+}
+
+.achievement-modal-achiever-profile-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: rgba(212, 235, 255, 0.9);
+    font-weight: 700;
+    background: rgba(19, 53, 102, 0.9);
+}
+
+.achievement-modal-achiever-info {
+    display: grid;
+    gap: 6px;
+}
+
+.achievement-modal-achiever-name {
+    margin: 0;
+    color: rgba(236, 246, 255, 0.96);
+}
+
+.achievement-modal-achiever-submission {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid rgba(124, 177, 242, 0.35);
+}
+
+.achievement-modal-achiever-missing {
+    margin: 0;
+    color: rgba(176, 213, 255, 0.75);
+    font-size: 0.88rem;
 }
 
 .achievement-modal-empty {

@@ -37,22 +37,26 @@ const getAchievementFields = (achievement, fallbackImage) => {
     const description = achievement.description || "No description yet.";
     const points = achievement.points ?? 0;
 
-    const rawAchievers = achievement.achievedUsers || achievement.achievedBy || achievement.usersAchieved || [];
-    const achievers = Array.isArray(rawAchievers)
-        ? rawAchievers
+    const rawAchievers = achievement.achievedUsersMap || [];
+    let achievers = [];
+
+    if (Array.isArray(rawAchievers)) {
+        achievers = rawAchievers
             .map((entry) => {
                 if (typeof entry === 'string') {
                     return entry;
                 }
 
                 if (entry && typeof entry === 'object') {
-                    return entry.username || entry.displayName || entry.name || entry.userId || '';
+                    return entry.username || '';
                 }
 
                 return '';
             })
-            .filter(Boolean)
-        : [];
+            .filter(Boolean);
+    } else if (rawAchievers && typeof rawAchievers === 'object') {
+        achievers = Object.keys(rawAchievers);
+    }
 
     return {
         ...achievement,
@@ -71,6 +75,8 @@ const Achievements = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState("");
     const [activeAchievement, setActiveAchievement] = useState(null);
+    const [achieversWithProfiles, setAchieversWithProfiles] = useState([]);
+    const [isLoadingAchievers, setIsLoadingAchievers] = useState(false);
     const [isClaimCaptureOpen, setIsClaimCaptureOpen] = useState(false);
     const [claimPhotoFile, setClaimPhotoFile] = useState(null);
     const [claimError, setClaimError] = useState('');
@@ -79,6 +85,7 @@ const Achievements = ({ user }) => {
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
     const [hasPendingClaim, setHasPendingClaim] = useState(false);
     const [isCheckingPendingClaim, setIsCheckingPendingClaim] = useState(false);
+    const [pendingClaimIds, setPendingClaimIds] = useState({});
 
     useEffect(() => {
         const fetchAchievements = async () => {
@@ -106,6 +113,47 @@ const Achievements = ({ user }) => {
         fetchAchievements();
     }, []);
 
+    useEffect(() => {
+        if (!user) {
+            setPendingClaimIds({});
+            return undefined;
+        }
+
+        let isMounted = true;
+
+        const loadPendingClaims = async () => {
+            try {
+                const snapshot = await db
+                    .collection('achievementClaims')
+                    .where('userId', '==', user.uid)
+                    .where('status', '==', 'pending')
+                    .get();
+
+                if (!isMounted) {
+                    return;
+                }
+
+                const nextPendingClaimIds = {};
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.achievementId) {
+                        nextPendingClaimIds[data.achievementId] = true;
+                    }
+                });
+
+                setPendingClaimIds(nextPendingClaimIds);
+            } catch (error) {
+                console.error('Error loading pending claims:', error);
+            }
+        };
+
+        loadPendingClaims();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [user]);
+
     const toggleCategory = (category) => {
         setOpenCategories((prev) => ({
             ...prev,
@@ -113,17 +161,79 @@ const Achievements = ({ user }) => {
         }));
     };
 
-    const openAchievementModal = (achievement, categoryImage) => {
-        setActiveAchievement(getAchievementFields(achievement, categoryImage));
+    const openAchievementModal = async (achievement, categoryImage) => {
+        const achievementFields = getAchievementFields(achievement, categoryImage);
+        setActiveAchievement(achievementFields);
+        setIsLoadingAchievers(true);
         setIsClaimCaptureOpen(false);
         setClaimPhotoFile(null);
         setClaimError('');
         setClaimSuccess('');
-        setHasPendingClaim(false);
+        setHasPendingClaim(Boolean(pendingClaimIds[achievement.id]));
+
+        try {
+            const rawAchievers = achievement.achievedUsersMap || [];
+            const nextAchievers = [];
+
+            if (rawAchievers && typeof rawAchievers === 'object' && !Array.isArray(rawAchievers)) {
+                for (const [userId, submissionPhotoUrl] of Object.entries(rawAchievers)) {
+                    let username = 'Unknown user';
+                    let profilePhotoUrl = '';
+
+                    try {
+                        const userDoc = await db.collection('users').doc(userId).get();
+                        if (userDoc.exists) {
+                            const userData = userDoc.data() || {};
+                            username = userData.username || username;
+                            profilePhotoUrl = userData.photoUrl || userData.photoURL || '';
+                        }
+                    } catch (error) {
+                        console.error(`Error loading user profile for ${userId}:`, error);
+                    }
+
+                    nextAchievers.push({
+                        id: userId,
+                        username,
+                        profilePhotoUrl,
+                        submissionPhotoUrl: submissionPhotoUrl || '',
+                    });
+                }
+            } else if (Array.isArray(rawAchievers)) {
+                rawAchievers.forEach((entry, index) => {
+                    if (typeof entry === 'string' && entry) {
+                        nextAchievers.push({
+                            id: `legacy-${index}-${entry}`,
+                            username: entry,
+                            profilePhotoUrl: '',
+                            submissionPhotoUrl: '',
+                        });
+                        return;
+                    }
+
+                    if (entry && typeof entry === 'object') {
+                        nextAchievers.push({
+                            id: entry.userId || `legacy-${index}`,
+                            username: entry.username || 'Unknown user',
+                            profilePhotoUrl: entry.photoUrl || entry.photoURL || '',
+                            submissionPhotoUrl: entry.submissionPhotoUrl || entry.claimPhotoUrl || '',
+                        });
+                    }
+                });
+            }
+
+            setAchieversWithProfiles(nextAchievers);
+        } catch (error) {
+            console.error('Error building achiever list:', error);
+            setAchieversWithProfiles([]);
+        } finally {
+            setIsLoadingAchievers(false);
+        }
     };
 
     const closeAchievementModal = () => {
         setActiveAchievement(null);
+        setAchieversWithProfiles([]);
+        setIsLoadingAchievers(false);
         setIsClaimCaptureOpen(false);
         setClaimPhotoFile(null);
         setClaimError('');
@@ -202,7 +312,7 @@ const Achievements = ({ user }) => {
         return () => {
             isMounted = false;
         };
-    }, [activeAchievement, user]);
+    }, [activeAchievement, user, pendingClaimIds]);
 
     const handleClaimSubmit = async () => {
         if (!user) {
@@ -216,8 +326,8 @@ const Achievements = ({ user }) => {
         }
 
         const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = process.env.REACT_APP_CLOUDINARY_ACHIEVEMENT_UPLOAD_PRESET || process.env.REACT_APP_CLOUDINARY_PROFILE_UPLOAD_PRESET;
-        const uploadFolder = process.env.REACT_APP_CLOUDINARY_ACHIEVEMENT_UPLOAD_FOLDER || process.env.REACT_APP_CLOUDINARY_PROFILE_UPLOAD_FOLDER;
+        const uploadPreset = process.env.REACT_APP_CLOUDINARY_PROFILE_UPLOAD_PRESET;
+        const uploadFolder = process.env.REACT_APP_CLOUDINARY_ACHIEVEMENT_CLAIM_UPLOAD_FOLDER;
 
         if (!cloudName || !uploadPreset) {
             setClaimError('Cloudinary config is missing for achievement claims.');
@@ -268,6 +378,10 @@ const Achievements = ({ user }) => {
             });
 
             setHasPendingClaim(true);
+            setPendingClaimIds((currentPendingClaimIds) => ({
+                ...currentPendingClaimIds,
+                [activeAchievement.id]: true,
+            }));
             setClaimSuccess('Claim submitted successfully.');
             setIsClaimCaptureOpen(false);
             setClaimPhotoFile(null);
@@ -295,6 +409,16 @@ const Achievements = ({ user }) => {
                     const isOpen = !!openCategories[category];
                     const items = achievementsByCategory[category] || [];
                     const categoryImage = CATEGORY_IMAGES[category];
+                    const sortedItems = [...items].sort((leftAchievement, rightAchievement) => {
+                        const leftIsPending = Boolean(pendingClaimIds[leftAchievement.id]);
+                        const rightIsPending = Boolean(pendingClaimIds[rightAchievement.id]);
+
+                        if (leftIsPending === rightIsPending) {
+                            return 0;
+                        }
+
+                        return leftIsPending ? -1 : 1;
+                    });
 
                     return (
                         <div key={category} className="achievement-category">
@@ -316,13 +440,14 @@ const Achievements = ({ user }) => {
                                     {items.length === 0 ? (
                                         <li className="achievement-empty">No achievements yet.</li>
                                     ) : (
-                                        items.map((achievement) => {
+                                        sortedItems.map((achievement) => {
                                             const achievementFields = getAchievementFields(achievement, categoryImage);
+                                            const isPending = Boolean(pendingClaimIds[achievement.id]);
 
                                             return (
                                                 <li
                                                     key={achievement.id}
-                                                    className="achievement-item achievement-item-clickable"
+                                                    className={`achievement-item achievement-item-clickable ${isPending ? 'achievement-item-pending' : ''}`}
                                                     onClick={() => openAchievementModal(achievement, categoryImage)}
                                                     onKeyDown={(event) => {
                                                         if (event.key === 'Enter' || event.key === ' ') {
@@ -339,7 +464,10 @@ const Achievements = ({ user }) => {
                                                         alt={`${achievementFields.name} icon`}
                                                     />
                                                     <div className="achievement-item-content">
-                                                        <div className="achievement-item-title">{achievementFields.name}</div>
+                                                        <div className="achievement-item-title-row">
+                                                            <div className="achievement-item-title">{achievementFields.name}</div>
+                                                            {isPending ? <span className="achievement-status-badge">Pending Review</span> : null}
+                                                        </div>
                                                         <div className="achievement-item-desc">{achievementFields.description}</div>
                                                     </div>
                                                     <div className="achievement-item-points" aria-label={`${achievementFields.points}`}>
@@ -392,10 +520,37 @@ const Achievements = ({ user }) => {
 
                         <div className="achievement-modal-achievers">
                             <h3>Users who achieved this</h3>
-                            {activeAchievement.achievers.length > 0 ? (
+                            {isLoadingAchievers ? (
+                                <p className="achievement-modal-empty">Loading achievers...</p>
+                            ) : achieversWithProfiles.length > 0 ? (
                                 <ul className="achievement-modal-achievers-list">
-                                    {activeAchievement.achievers.map((achiever) => (
-                                        <li key={achiever}>{achiever}</li>
+                                    {achieversWithProfiles.map((achiever) => (
+                                        <li key={achiever.id} className="achievement-modal-achiever-item">
+                                            {achiever.profilePhotoUrl ? (
+                                                <img
+                                                    src={achiever.profilePhotoUrl}
+                                                    alt={`${achiever.username} profile`}
+                                                    className="achievement-modal-achiever-profile"
+                                                />
+                                            ) : (
+                                                <span className="achievement-modal-achiever-profile achievement-modal-achiever-profile-fallback" aria-hidden="true">
+                                                    {((achiever.username || '').slice(0, 1).toUpperCase()) || '?'}
+                                                </span>
+                                            )}
+
+                                            <div className="achievement-modal-achiever-info">
+                                                <p className="achievement-modal-achiever-name">{achiever.username}</p>
+                                                {achiever.submissionPhotoUrl ? (
+                                                    <img
+                                                        src={achiever.submissionPhotoUrl}
+                                                        alt={`${achiever.username} submission`}
+                                                        className="achievement-modal-achiever-submission"
+                                                    />
+                                                ) : (
+                                                    <p className="achievement-modal-achiever-missing">No submission image saved.</p>
+                                                )}
+                                            </div>
+                                        </li>
                                     ))}
                                 </ul>
                             ) : (
