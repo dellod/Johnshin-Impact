@@ -112,13 +112,15 @@ const Signup = () =>
                     authEmail,
                     username: normalizedUsername,
                     favJohn: favJohn.trim(),
-                    photoUrl: result.secure_url
+                    photoUrl: result.secure_url,
+                    points: 0,
+                    achievements: []
                 }),
                 15000,
                 'Saving to Firebase timed out. Check Firestore rules and Firebase config.'
             );
 
-            setSubmitSuccess('Image uploaded successfully.');
+            setSubmitSuccess('Signup successful.');
             setSubmitProgress('');
             console.log('Cloudinary uploaded image URL:', result.secure_url);
         } catch (error) {

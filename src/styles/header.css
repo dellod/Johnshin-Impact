@@ -85,6 +85,50 @@
     animation: logoDropFadeIn 4s ease-out forwards;
 }
 
+.user-info {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.user-info:visited,
+.user-info:hover,
+.user-info:active {
+    text-decoration: none;
+    color: inherit;
+}
+
+.welcome-message {
+    font-size: 2rem;
+    color: white;
+    font-family: 'Neuton', serif;
+    text-shadow:
+        0 0 8px rgba(80, 140, 255, 0.75),
+        0 0 18px rgba(80, 140, 255, 0.55),
+        0 0 28px rgba(80, 140, 255, 0.35);
+}
+
+.profile-photo {
+    width:  5em;
+    height: 5em;
+    border-radius: 100%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.points-label {
+    color: white;
+    font-family: 'Neuton', serif;
+    font-size: 1.5rem;
+    text-shadow:
+        0 0 8px rgba(80, 140, 255, 0.75),
+        0 0 18px rgba(80, 140, 255, 0.55),
+        0 0 28px rgba(80, 140, 255, 0.35);
+}
 @keyframes logoDropFadeIn {
     0% {
         opacity: 0;
