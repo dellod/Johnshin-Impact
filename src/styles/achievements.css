@@ -362,27 +362,41 @@
     font-family: 'Neuton', serif;
 }
 
+.achievement-modal-achievers {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(124, 177, 242, 0.25);
+}
+
 .achievement-modal-achievers-list {
     margin: 0;
     padding-left: 0;
     list-style: none;
     display: grid;
-    gap: 10px;
+    gap: 8px;
 }
 
 .achievement-modal-achiever-item {
-    display: flex;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
     align-items: center;
-    padding: 10px;
+    padding: 8px 10px;
     border-radius: 10px;
     border: 1px solid rgba(124, 177, 242, 0.25);
     background: rgba(56, 124, 232, 0.1);
 }
 
+.achievement-modal-achiever-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
 .achievement-modal-achiever-profile {
-    width: 46px;
-    height: 46px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid rgba(124, 177, 242, 0.45);
@@ -398,28 +412,30 @@
     background: rgba(19, 53, 102, 0.9);
 }
 
-.achievement-modal-achiever-info {
-    display: grid;
-    gap: 6px;
-}
-
 .achievement-modal-achiever-name {
     margin: 0;
     color: rgba(236, 246, 255, 0.96);
+    font-size: 0.95rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .achievement-modal-achiever-submission {
-    width: 96px;
-    height: 96px;
+    width: 72px;
+    height: 72px;
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid rgba(124, 177, 242, 0.35);
+    cursor: zoom-in;
 }
 
 .achievement-modal-achiever-missing {
     margin: 0;
     color: rgba(176, 213, 255, 0.75);
-    font-size: 0.88rem;
+    font-size: 0.8rem;
+    text-align: right;
 }
 
 .achievement-modal-empty {
@@ -428,9 +444,7 @@
 }
 
 .achievement-modal-claim {
-    margin-top: 18px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(124, 177, 242, 0.25);
+    margin-top: 14px;
 }
 
 .achievement-claim-btn,

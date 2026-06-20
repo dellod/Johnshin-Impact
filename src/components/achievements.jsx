@@ -83,6 +83,7 @@ const Achievements = ({ user }) => {
     const [claimSuccess, setClaimSuccess] = useState('');
     const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+    const [activeSubmissionPreviewImage, setActiveSubmissionPreviewImage] = useState('');
     const [hasPendingClaim, setHasPendingClaim] = useState(false);
     const [isCheckingPendingClaim, setIsCheckingPendingClaim] = useState(false);
     const [pendingClaimIds, setPendingClaimIds] = useState({});
@@ -239,6 +240,7 @@ const Achievements = ({ user }) => {
         setClaimError('');
         setClaimSuccess('');
         setIsImagePreviewOpen(false);
+        setActiveSubmissionPreviewImage('');
         setHasPendingClaim(false);
     };
 
@@ -259,6 +261,11 @@ const Achievements = ({ user }) => {
 
         const handleEscape = (event) => {
             if (event.key === 'Escape') {
+                if (activeSubmissionPreviewImage) {
+                    setActiveSubmissionPreviewImage('');
+                    return;
+                }
+
                 if (isImagePreviewOpen) {
                     setIsImagePreviewOpen(false);
                     return;
@@ -272,7 +279,7 @@ const Achievements = ({ user }) => {
         return () => {
             window.removeEventListener('keydown', handleEscape);
         };
-    }, [activeAchievement, isImagePreviewOpen]);
+    }, [activeAchievement, isImagePreviewOpen, activeSubmissionPreviewImage]);
 
     useEffect(() => {
         if (!activeAchievement || !user) {
@@ -518,46 +525,6 @@ const Achievements = ({ user }) => {
                             {activeAchievement.points}
                         </div>
 
-                        <div className="achievement-modal-achievers">
-                            <h3>Users who achieved this</h3>
-                            {isLoadingAchievers ? (
-                                <p className="achievement-modal-empty">Loading achievers...</p>
-                            ) : achieversWithProfiles.length > 0 ? (
-                                <ul className="achievement-modal-achievers-list">
-                                    {achieversWithProfiles.map((achiever) => (
-                                        <li key={achiever.id} className="achievement-modal-achiever-item">
-                                            {achiever.profilePhotoUrl ? (
-                                                <img
-                                                    src={achiever.profilePhotoUrl}
-                                                    alt={`${achiever.username} profile`}
-                                                    className="achievement-modal-achiever-profile"
-                                                />
-                                            ) : (
-                                                <span className="achievement-modal-achiever-profile achievement-modal-achiever-profile-fallback" aria-hidden="true">
-                                                    {((achiever.username || '').slice(0, 1).toUpperCase()) || '?'}
-                                                </span>
-                                            )}
-
-                                            <div className="achievement-modal-achiever-info">
-                                                <p className="achievement-modal-achiever-name">{achiever.username}</p>
-                                                {achiever.submissionPhotoUrl ? (
-                                                    <img
-                                                        src={achiever.submissionPhotoUrl}
-                                                        alt={`${achiever.username} submission`}
-                                                        className="achievement-modal-achiever-submission"
-                                                    />
-                                                ) : (
-                                                    <p className="achievement-modal-achiever-missing">No submission image saved.</p>
-                                                )}
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="achievement-modal-empty">Be the first to achieve this.</p>
-                            )}
-                        </div>
-
                         <div className="achievement-modal-claim">
                             {!user ? (
                                 <p className="achievement-modal-empty">Log in to claim this achievement.</p>
@@ -606,6 +573,49 @@ const Achievements = ({ user }) => {
                             {claimError ? <p className="achievement-claim-error">{claimError}</p> : null}
                             {claimSuccess ? <p className="achievement-claim-success">{claimSuccess}</p> : null}
                         </div>
+
+                        <div className="achievement-modal-achievers">
+                            <h3>Users who achieved this</h3>
+                            {isLoadingAchievers ? (
+                                <p className="achievement-modal-empty">Loading achievers...</p>
+                            ) : achieversWithProfiles.length > 0 ? (
+                                <ul className="achievement-modal-achievers-list">
+                                    {achieversWithProfiles.map((achiever) => (
+                                        <li key={achiever.id} className="achievement-modal-achiever-item">
+                                            <div className="achievement-modal-achiever-identity">
+                                                {achiever.profilePhotoUrl ? (
+                                                    <img
+                                                        src={achiever.profilePhotoUrl}
+                                                        alt={`${achiever.username} profile`}
+                                                        className="achievement-modal-achiever-profile"
+                                                    />
+                                                ) : (
+                                                    <span className="achievement-modal-achiever-profile achievement-modal-achiever-profile-fallback" aria-hidden="true">
+                                                        {((achiever.username || '').slice(0, 1).toUpperCase()) || '?'}
+                                                    </span>
+                                                )}
+                                                <p className="achievement-modal-achiever-name">{achiever.username}</p>
+                                            </div>
+
+                                            {achiever.submissionPhotoUrl ? (
+                                                <img
+                                                    src={achiever.submissionPhotoUrl}
+                                                    alt={`${achiever.username} submission`}
+                                                    className="achievement-modal-achiever-submission"
+                                                    onClick={() => setActiveSubmissionPreviewImage(achiever.submissionPhotoUrl)}
+                                                />
+                                            ) : (
+                                                <p className="achievement-modal-achiever-missing">No submission image saved.</p>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="achievement-modal-empty">Be the first to achieve this.</p>
+                            )}
+                        </div>
+
+                        
                     </div>
                 </div>
             )}
@@ -637,6 +647,34 @@ const Achievements = ({ user }) => {
                     </div>
                 </div>
             )}
+
+            {activeSubmissionPreviewImage ? (
+                <div
+                    className="achievement-image-preview-backdrop"
+                    onClick={(event) => {
+                        if (event.target === event.currentTarget) {
+                            setActiveSubmissionPreviewImage('');
+                        }
+                    }}
+                >
+                    <div className="achievement-image-preview-modal" role="dialog" aria-modal="true" aria-label="Achievement submission image preview">
+                        <button
+                            type="button"
+                            className="achievement-image-preview-close"
+                            onClick={() => setActiveSubmissionPreviewImage('')}
+                            aria-label="Close submission image preview"
+                        >
+                            x
+                        </button>
+
+                        <img
+                            className="achievement-image-preview-img"
+                            src={activeSubmissionPreviewImage}
+                            alt="Achievement submission preview"
+                        />
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 };
