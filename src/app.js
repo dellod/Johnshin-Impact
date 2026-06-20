@@ -15,7 +15,7 @@ import Navbar from './components/navbar';
 import Achievements from './components/achievements';
 import Admin from './components/admin';
 import Profile from './components/profile';
-
+import Leaderboard from './components/leaderboard';
 // Scripts
 import { auth } from './scripts/firebase';
 
@@ -82,6 +82,7 @@ function App() {
               <Route path="/signup" element={user ? <Header user={user} /> : <Signup />} />
               <Route path="/login" element={user ? <Header user={user} /> : <Login />} />
               <Route path="/achievements" element={<Achievements user={user} />} />
+              <Route path="/leaderboard" element={<Leaderboard user={user} />} />
               <Route path="/profile/:slug" element={<ProfileRoute />} />
               <Route path="/admin" element={<Admin user={user} />} />
             </Routes>

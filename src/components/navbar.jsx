@@ -71,6 +71,7 @@ const Navbar = ({ user }) => {
                 >
                     <Link to="/" className="navbar-link" onClick={handleCloseMenu}>Home</Link>
                     <Link to="/achievements" className="navbar-link" onClick={handleCloseMenu}>Achievements</Link>
+                    <Link to="/leaderboard" className="navbar-link" onClick={handleCloseMenu}>Leaderboard</Link>
                     {!user ? (
                         <>
                             <Link to="/signup" className="navbar-link" onClick={handleCloseMenu}>Sign Up</Link>

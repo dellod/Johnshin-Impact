@@ -1,0 +1,192 @@
+.leaderboard-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 16px 40px;
+    box-sizing: border-box;
+}
+
+.leaderboard-title {
+    color: white;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-family: 'Neuton', serif;
+    margin: 0 0 40px;
+}
+
+.leaderboard-container {
+    width: min(900px, 100%);
+    border-radius: 14px;
+    border: 1px solid rgba(124, 177, 242, 0.35);
+    background: rgba(9, 27, 56, 0.45);
+    backdrop-filter: blur(3px);
+    overflow: hidden;
+}
+
+.leaderboard-header {
+    display: grid;
+    grid-template-columns: 50px 1fr 150px;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(56, 124, 232, 0.2);
+    border-bottom: 1px solid rgba(124, 177, 242, 0.35);
+    font-weight: 600;
+    color: rgba(220, 239, 255, 0.9);
+    font-family: 'Neuton', serif;
+}
+
+.leaderboard-header-rank {
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.leaderboard-header-user {
+    font-size: 0.95rem;
+}
+
+.leaderboard-header-points {
+    text-align: right;
+    font-size: 0.95rem;
+}
+
+.leaderboard-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.leaderboard-item {
+    display: grid;
+    grid-template-columns: 50px 1fr 150px;
+    gap: 16px;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(124, 177, 242, 0.15);
+    transition: background 0.2s ease;
+}
+
+.leaderboard-item:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-item:hover {
+    background: rgba(56, 124, 232, 0.08);
+}
+
+.leaderboard-item-current {
+    background: rgba(124, 177, 242, 0.15);
+    border-left: 4px solid rgba(186, 222, 255, 0.9);
+    padding-left: 16px;
+}
+
+.leaderboard-item-current:hover {
+    background: rgba(124, 177, 242, 0.22);
+}
+
+.leaderboard-rank {
+    text-align: center;
+    color: rgba(176, 213, 255, 0.8);
+    font-family: 'Neuton', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.leaderboard-rank-medal {
+    display: block;
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+}
+
+.leaderboard-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.leaderboard-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(124, 177, 242, 0.45);
+    flex-shrink: 0;
+}
+
+.leaderboard-avatar-fallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(56, 124, 232, 0.4);
+    border: 2px solid rgba(124, 177, 242, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(220, 239, 255, 0.9);
+    font-weight: 600;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.leaderboard-username {
+    color: #ffffff;
+    font-family: 'Neuton', serif;
+    font-size: 1.05rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.leaderboard-username-link {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.leaderboard-username-link:hover {
+    color: rgba(186, 222, 255, 0.9);
+}
+
+.leaderboard-username-link:focus-visible {
+    outline: 2px solid rgba(186, 222, 255, 0.9);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.leaderboard-points {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    color: #d9ebff;
+    font-family: 'Neuton', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: rgba(56, 124, 232, 0.25);
+    border: 1px solid rgba(124, 177, 242, 0.45);
+    border-radius: 999px;
+    padding: 6px 14px;
+    white-space: nowrap;
+}
+
+.leaderboard-points-icon {
+    width: 0.95em;
+    height: 0.95em;
+    display: block;
+}
+
+.leaderboard-loading {
+    padding: 40px 20px;
+    text-align: center;
+    color: rgba(176, 213, 255, 0.8);
+    font-size: 1.05rem;
+}
+
+.leaderboard-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: rgba(176, 213, 255, 0.8);
+    font-size: 1.05rem;
+}
