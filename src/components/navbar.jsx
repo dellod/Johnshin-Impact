@@ -8,7 +8,10 @@ import '../styles/navbar.css';
 // Assets
 import MenuIcon from '../assets/navbar/menu.png';
 
-const Navbar = () => {
+// Scripts
+import { auth } from "../scripts/firebase";
+
+const Navbar = ({ user }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleToggleMenu = () => {
@@ -17,6 +20,11 @@ const Navbar = () => {
 
     const handleCloseMenu = () => {
         setIsMenuOpen(false);
+    };
+
+    const handleLogout = () => {
+        auth.signOut();
+        handleCloseMenu();
     };
 
     return(
@@ -37,8 +45,20 @@ const Navbar = () => {
                     className={`navbar-links ${isMenuOpen ? 'navbar-links-open' : ''}`}
                 >
                     <Link to="/" className="navbar-link" onClick={handleCloseMenu}>Home</Link>
-                    <Link to="/signup" className="navbar-link" onClick={handleCloseMenu}>Sign Up</Link>
-                    <Link to="/login" className="navbar-link" onClick={handleCloseMenu}>Login</Link>
+                    {!user ? (
+                        <>
+                            <Link to="/signup" className="navbar-link" onClick={handleCloseMenu}>Sign Up</Link>
+                            <Link to="/login" className="navbar-link" onClick={handleCloseMenu}>Login</Link>
+                        </>
+                    ) : (
+                        <button 
+                            className="navbar-link" 
+                            onClick={handleLogout}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0' }}
+                        >
+                            Logout
+                        </button>
+                    )}
                 </div>
              </div>
         </nav>
