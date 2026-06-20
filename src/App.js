@@ -11,6 +11,7 @@ import Signup from './components/signup';
 import Login from './components/login';
 import LoadingScreenVideo from './assets/loading_screen.mp4';
 import LoadingScreenImage from './assets/loading_screen.jpg';
+import Navbar from './components/navbar';
 
 function App() {
   return (
@@ -29,15 +30,16 @@ function App() {
 
       <div className="bg-overlay" aria-hidden="true" />
 
-      <div className="content-layer">
-        <Router>
+      <Router>
+        <div className="content-layer">
+          <Navbar />
             <Routes>
                 <Route path="/" element={<Header />} />
                 <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
             </Routes>
-        </Router>
-      </div>
+        </div>
+      </Router>
     </div>
   );
 }
