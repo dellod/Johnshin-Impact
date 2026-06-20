@@ -1,6 +1,6 @@
 // React libraries
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useParams } from "react-router-dom";
 
 // Styles
 import './styles/app.css';
@@ -18,6 +18,11 @@ import Profile from './components/profile';
 
 // Scripts
 import { auth } from './scripts/firebase';
+
+const ProfileRoute = () => {
+  const { slug } = useParams();
+  return <Profile key={slug} />;
+};
 
 function App() {
   const [user, setUser] = useState(null);
@@ -77,7 +82,7 @@ function App() {
               <Route path="/signup" element={user ? <Header user={user} /> : <Signup />} />
               <Route path="/login" element={user ? <Header user={user} /> : <Login />} />
               <Route path="/achievements" element={<Achievements user={user} />} />
-              <Route path="/profile/:slug" element={<Profile />} />
+              <Route path="/profile/:slug" element={<ProfileRoute />} />
               <Route path="/admin" element={<Admin user={user} />} />
             </Routes>
         </div>

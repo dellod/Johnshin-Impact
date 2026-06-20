@@ -1,12 +1,12 @@
 // React libraries
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 
 // CSS
 import '../styles/achievements.css';
 
 // Components
 import CameraCapture from './cameraCapture';
+import AchievementDetailsModal from './achievementDetailsModal';
 
 // Assets
 import ArtOfAdventure from '../assets/artofadventure.png';
@@ -88,8 +88,6 @@ const Achievements = ({ user }) => {
     const [claimError, setClaimError] = useState('');
     const [claimSuccess, setClaimSuccess] = useState('');
     const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
-    const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
-    const [activeSubmissionPreviewImage, setActiveSubmissionPreviewImage] = useState('');
     const [hasPendingClaim, setHasPendingClaim] = useState(false);
     const [isCheckingPendingClaim, setIsCheckingPendingClaim] = useState(false);
     const [pendingClaimIds, setPendingClaimIds] = useState({});
@@ -307,8 +305,6 @@ const Achievements = ({ user }) => {
         setClaimPhotoFile(null);
         setClaimError('');
         setClaimSuccess('');
-        setIsImagePreviewOpen(false);
-        setActiveSubmissionPreviewImage('');
         setHasPendingClaim(false);
     };
 
@@ -321,33 +317,6 @@ const Achievements = ({ user }) => {
 
         return snapshot.docs.some((doc) => doc.data().achievementId === achievementId);
     };
-
-    useEffect(() => {
-        if (!activeAchievement) {
-            return undefined;
-        }
-
-        const handleEscape = (event) => {
-            if (event.key === 'Escape') {
-                if (activeSubmissionPreviewImage) {
-                    setActiveSubmissionPreviewImage('');
-                    return;
-                }
-
-                if (isImagePreviewOpen) {
-                    setIsImagePreviewOpen(false);
-                    return;
-                }
-
-                closeAchievementModal();
-            }
-        };
-
-        window.addEventListener('keydown', handleEscape);
-        return () => {
-            window.removeEventListener('keydown', handleEscape);
-        };
-    }, [activeAchievement, isImagePreviewOpen, activeSubmissionPreviewImage]);
 
     useEffect(() => {
         if (!activeAchievement || !user) {
@@ -476,6 +445,59 @@ const Achievements = ({ user }) => {
         return <div className="achievements-error">{fetchError}</div>;
     }
 
+    const claimContent = (
+        <>
+            {!user ? (
+                <p className="achievement-modal-empty">Log in to claim this achievement.</p>
+            ) : isCheckingPendingClaim ? (
+                <p className="achievement-modal-empty">Checking claim status...</p>
+            ) : completedAchievementIds[activeAchievement?.id] ? (
+                <p className="achievement-modal-empty">You have already completed this achievement.</p>
+            ) : hasPendingClaim ? (
+                <p className="achievement-modal-empty">You already have a pending claim for this achievement.</p>
+            ) : (
+                <>
+                    {!isClaimCaptureOpen ? (
+                        <button
+                            type="button"
+                            className="achievement-claim-btn"
+                            onClick={() => {
+                                setIsClaimCaptureOpen(true);
+                                setClaimError('');
+                                setClaimSuccess('');
+                            }}
+                            disabled={hasPendingClaim || isCheckingPendingClaim}
+                        >
+                            Claim Achievement
+                        </button>
+                    ) : (
+                        <div className="achievement-claim-capture">
+                            <CameraCapture
+                                label="Take a photo for your claim"
+                                onCapture={(file) => {
+                                    setClaimPhotoFile(file);
+                                    setClaimError('');
+                                }}
+                            />
+
+                            <button
+                                type="button"
+                                className="achievement-claim-submit"
+                                onClick={handleClaimSubmit}
+                                disabled={!claimPhotoFile || isSubmittingClaim}
+                            >
+                                {isSubmittingClaim ? 'Submitting...' : 'Submit Claim'}
+                            </button>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {claimError ? <p className="achievement-claim-error">{claimError}</p> : null}
+            {claimSuccess ? <p className="achievement-claim-success">{claimSuccess}</p> : null}
+        </>
+    );
+
     return (
         <div className="achievements-page">
             <h1 className="achievements-title">Achievements</h1>
@@ -491,7 +513,7 @@ const Achievements = ({ user }) => {
             </div>
             <div className="achievements-list">
                 {CATEGORIES.map((category) => {
-                    const isOpen = !!openCategories[category];
+                    const isOpen = Boolean(openCategories[category]);
                     const items = achievementsByCategory[category] || [];
                     const categoryImage = CATEGORY_IMAGES[category];
                     const sortedItems = [...items].sort((leftAchievement, rightAchievement) => {
@@ -526,7 +548,7 @@ const Achievements = ({ user }) => {
                                 </span>
                             </button>
 
-                            {isOpen && (
+                            {isOpen ? (
                                 <ul className="achievement-items">
                                     {items.length === 0 ? (
                                         <li className="achievement-empty">No achievements yet.</li>
@@ -555,6 +577,7 @@ const Achievements = ({ user }) => {
                                                         src={achievementFields.image}
                                                         alt={`${achievementFields.name} icon`}
                                                     />
+
                                                     <div className="achievement-item-content">
                                                         <div className="achievement-item-title-row">
                                                             <div className="achievement-item-title">{achievementFields.name}</div>
@@ -563,6 +586,7 @@ const Achievements = ({ user }) => {
                                                         </div>
                                                         <div className="achievement-item-desc">{achievementFields.description}</div>
                                                     </div>
+
                                                     <div className="achievement-item-points" aria-label={`${achievementFields.points}`}>
                                                         <img className="achievement-points-icon" src={PointsIcon} alt="" aria-hidden="true" />
                                                         {achievementFields.points}
@@ -572,199 +596,21 @@ const Achievements = ({ user }) => {
                                         })
                                     )}
                                 </ul>
-                            )}
+                            ) : null}
                         </div>
                     );
                 })}
             </div>
 
-            {activeAchievement && (
-                <div className="achievement-modal-backdrop" onClick={(event) => {
-                    if (event.target === event.currentTarget) {
-                        closeAchievementModal();
-                    }
-                }}>
-                    <div className="achievement-modal" role="dialog" aria-modal="true" aria-label="Achievement details">
-                        <button className="achievement-modal-close" type="button" onClick={closeAchievementModal} aria-label="Close achievement details">
-                            x
-                        </button>
-
-                        <div className="achievement-modal-header">
-                            <button
-                                type="button"
-                                className="achievement-modal-icon-button"
-                                onClick={() => setIsImagePreviewOpen(true)}
-                                aria-label="Open achievement icon preview"
-                            >
-                                <img className="achievement-modal-icon" src={activeAchievement.image} alt={`${activeAchievement.name} icon`} />
-                            </button>
-                            <div>
-                                <h2 className="achievement-modal-title">{activeAchievement.name}</h2>
-                                <p className="achievement-modal-category">{activeAchievement.category}</p>
-                            </div>
-                        </div>
-
-                        <p className="achievement-modal-description">{activeAchievement.description}</p>
-
-                        <div className="achievement-modal-points" aria-label={`Points ${activeAchievement.points}`}>
-                            <img className="achievement-points-icon" src={PointsIcon} alt="" aria-hidden="true" />
-                            {activeAchievement.points}
-                        </div>
-
-                        <div className="achievement-modal-claim">
-                            {!user ? (
-                                <p className="achievement-modal-empty">Log in to claim this achievement.</p>
-                            ) : isCheckingPendingClaim ? (
-                                <p className="achievement-modal-empty">Checking claim status...</p>
-                            ) : completedAchievementIds[activeAchievement.id] ? (
-                                <p className="achievement-modal-empty">You have already completed this achievement.</p>
-                            ) : hasPendingClaim ? (
-                                <p className="achievement-modal-empty">You already have a pending claim for this achievement.</p>
-                            ) : (
-                                <>
-                                    {!isClaimCaptureOpen ? (
-                                        <button
-                                            type="button"
-                                            className="achievement-claim-btn"
-                                            onClick={() => {
-                                                setIsClaimCaptureOpen(true);
-                                                setClaimError('');
-                                                setClaimSuccess('');
-                                            }}
-                                            disabled={hasPendingClaim || isCheckingPendingClaim}
-                                        >
-                                            Claim Achievement
-                                        </button>
-                                    ) : (
-                                        <div className="achievement-claim-capture">
-                                            <CameraCapture
-                                                label="Take a photo for your claim"
-                                                onCapture={(file) => {
-                                                    setClaimPhotoFile(file);
-                                                    setClaimError('');
-                                                }}
-                                            />
-
-                                            <button
-                                                type="button"
-                                                className="achievement-claim-submit"
-                                                onClick={handleClaimSubmit}
-                                                disabled={!claimPhotoFile || isSubmittingClaim}
-                                            >
-                                                {isSubmittingClaim ? 'Submitting...' : 'Submit Claim'}
-                                            </button>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-
-                            {claimError ? <p className="achievement-claim-error">{claimError}</p> : null}
-                            {claimSuccess ? <p className="achievement-claim-success">{claimSuccess}</p> : null}
-                        </div>
-
-                        <div className="achievement-modal-achievers">
-                            <h3>Users who achieved this</h3>
-                            {isLoadingAchievers ? (
-                                <p className="achievement-modal-empty">Loading achievers...</p>
-                            ) : achieversWithProfiles.length > 0 ? (
-                                <ul className="achievement-modal-achievers-list">
-                                    {achieversWithProfiles.map((achiever) => (
-                                        <li key={achiever.id} className="achievement-modal-achiever-item">
-                                            <Link
-                                                to={`/profile/${achiever.id}`}
-                                                className="achievement-modal-achiever-identity achievement-modal-achiever-identity-link"
-                                            >
-                                                {achiever.profilePhotoUrl ? (
-                                                    <img
-                                                        src={achiever.profilePhotoUrl}
-                                                        alt={`${achiever.username} profile`}
-                                                        className="achievement-modal-achiever-profile"
-                                                    />
-                                                ) : (
-                                                    <span className="achievement-modal-achiever-profile achievement-modal-achiever-profile-fallback" aria-hidden="true">
-                                                        {((achiever.username || '').slice(0, 1).toUpperCase()) || '?'}
-                                                    </span>
-                                                )}
-                                                <p className="achievement-modal-achiever-name">{achiever.username}</p>
-                                            </Link>
-
-                                            {achiever.submissionPhotoUrl ? (
-                                                <img
-                                                    src={achiever.submissionPhotoUrl}
-                                                    alt={`${achiever.username} submission`}
-                                                    className="achievement-modal-achiever-submission"
-                                                    onClick={() => setActiveSubmissionPreviewImage(achiever.submissionPhotoUrl)}
-                                                />
-                                            ) : (
-                                                <p className="achievement-modal-achiever-missing">No submission image saved.</p>
-                                            )}
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="achievement-modal-empty">Be the first to achieve this.</p>
-                            )}
-                        </div>
-
-                        
-                    </div>
-                </div>
-            )}
-
-            {activeAchievement && isImagePreviewOpen && (
-                <div
-                    className="achievement-image-preview-backdrop"
-                    onClick={(event) => {
-                        if (event.target === event.currentTarget) {
-                            setIsImagePreviewOpen(false);
-                        }
-                    }}
-                >
-                    <div className="achievement-image-preview-modal" role="dialog" aria-modal="true" aria-label="Achievement icon preview">
-                        <button
-                            type="button"
-                            className="achievement-image-preview-close"
-                            onClick={() => setIsImagePreviewOpen(false)}
-                            aria-label="Close icon preview"
-                        >
-                            x
-                        </button>
-
-                        <img
-                            className="achievement-image-preview-img"
-                            src={activeAchievement.image}
-                            alt={`${activeAchievement.name} large preview`}
-                        />
-                    </div>
-                </div>
-            )}
-
-            {activeSubmissionPreviewImage ? (
-                <div
-                    className="achievement-image-preview-backdrop"
-                    onClick={(event) => {
-                        if (event.target === event.currentTarget) {
-                            setActiveSubmissionPreviewImage('');
-                        }
-                    }}
-                >
-                    <div className="achievement-image-preview-modal" role="dialog" aria-modal="true" aria-label="Achievement submission image preview">
-                        <button
-                            type="button"
-                            className="achievement-image-preview-close"
-                            onClick={() => setActiveSubmissionPreviewImage('')}
-                            aria-label="Close submission image preview"
-                        >
-                            x
-                        </button>
-
-                        <img
-                            className="achievement-image-preview-img"
-                            src={activeSubmissionPreviewImage}
-                            alt="Achievement submission preview"
-                        />
-                    </div>
-                </div>
+            {activeAchievement ? (
+                <AchievementDetailsModal
+                    achievement={activeAchievement}
+                    onClose={closeAchievementModal}
+                    onProfileNavigate={closeAchievementModal}
+                    isLoadingAchievers={isLoadingAchievers}
+                    achieversWithProfiles={achieversWithProfiles}
+                    claimContent={claimContent}
+                />
             ) : null}
         </div>
     );
