@@ -71,6 +71,11 @@ const getAchievementFields = (achievement, fallbackImage) => {
 const Achievements = ({ user }) => {
     // achievementsByCategory: { [category]: Achievement[] }
     const [achievementsByCategory, setAchievementsByCategory] = useState({});
+    const [achievementPointMap, setAchievementPointMap] = useState({});
+    const [totalAchievementCount, setTotalAchievementCount] = useState(0);
+    const [earnedAchievementCount, setEarnedAchievementCount] = useState(0);
+    const [completedAchievementIds, setCompletedAchievementIds] = useState({});
+    const [totalPoints, setTotalPoints] = useState(0);
     const [openCategories, setOpenCategories] = useState({});
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState("");
@@ -93,16 +98,21 @@ const Achievements = ({ user }) => {
             try {
                 const snapshot = await db.collection("achievements").get();
                 const grouped = {};
+                const nextAchievementPointMap = {};
                 CATEGORIES.forEach((cat) => { grouped[cat] = []; });
 
                 snapshot.forEach((doc) => {
                     const data = { id: doc.id, ...doc.data() };
+                    const parsedPoints = Number(data.points ?? 0);
+                    nextAchievementPointMap[doc.id] = Number.isNaN(parsedPoints) ? 0 : parsedPoints;
                     if (grouped[data.category] !== undefined) {
                         grouped[data.category].push(data);
                     }
                 });
 
                 setAchievementsByCategory(grouped);
+                setAchievementPointMap(nextAchievementPointMap);
+                setTotalAchievementCount(snapshot.size);
             } catch (error) {
                 console.error("Error fetching achievements:", error);
                 setFetchError("Failed to load achievements.");
@@ -113,6 +123,63 @@ const Achievements = ({ user }) => {
 
         fetchAchievements();
     }, []);
+
+    useEffect(() => {
+        if (!user) {
+            setEarnedAchievementCount(0);
+            setCompletedAchievementIds({});
+            setTotalPoints(0);
+            return undefined;
+        }
+
+        let isMounted = true;
+
+        const loadUserAchievementSummary = async () => {
+            try {
+                const userSnapshot = await db.collection('users').doc(user.uid).get();
+
+                if (!isMounted) {
+                    return;
+                }
+
+                const userData = userSnapshot.exists ? (userSnapshot.data() || {}) : {};
+                const achievementMap = userData.achievements && typeof userData.achievements === 'object'
+                    ? userData.achievements
+                    : {};
+                const achievementIds = Object.keys(achievementMap);
+                const nextCompletedAchievementIds = achievementIds.reduce((accumulator, achievementId) => {
+                    if (Object.prototype.hasOwnProperty.call(achievementPointMap, achievementId)) {
+                        accumulator[achievementId] = true;
+                    }
+
+                    return accumulator;
+                }, {});
+
+                const earnedCount = Object.keys(nextCompletedAchievementIds).length;
+                const nextTotalPoints = achievementIds.reduce((sum, achievementId) => {
+                    const points = achievementPointMap[achievementId];
+                    return sum + (typeof points === 'number' ? points : 0);
+                }, 0);
+
+                setCompletedAchievementIds(nextCompletedAchievementIds);
+                setEarnedAchievementCount(earnedCount);
+                setTotalPoints(nextTotalPoints);
+            } catch (error) {
+                console.error('Error loading user achievement summary:', error);
+                if (isMounted) {
+                    setCompletedAchievementIds({});
+                    setEarnedAchievementCount(0);
+                    setTotalPoints(0);
+                }
+            }
+        };
+
+        loadUserAchievementSummary();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [user, achievementPointMap]);
 
     useEffect(() => {
         if (!user) {
@@ -411,6 +478,16 @@ const Achievements = ({ user }) => {
     return (
         <div className="achievements-page">
             <h1 className="achievements-title">Achievements</h1>
+            <div className="achievements-summary" aria-label="Achievement summary">
+                <div className="achievements-summary-card">
+                    <img src={PointsIcon} className="achievements-summary-icon" alt="Points" />
+                    <span className="achievements-summary-value">{totalPoints}</span>
+                </div>
+                <div className="achievements-summary-card achievements-summary-count">
+                    <span className="achievements-summary-value">{earnedAchievementCount}/{totalAchievementCount}</span>
+                    <span className="achievements-summary-label">Achievements</span>
+                </div>
+            </div>
             <div className="achievements-list">
                 {CATEGORIES.map((category) => {
                     const isOpen = !!openCategories[category];
@@ -419,12 +496,18 @@ const Achievements = ({ user }) => {
                     const sortedItems = [...items].sort((leftAchievement, rightAchievement) => {
                         const leftIsPending = Boolean(pendingClaimIds[leftAchievement.id]);
                         const rightIsPending = Boolean(pendingClaimIds[rightAchievement.id]);
+                        const leftIsCompleted = Boolean(completedAchievementIds[leftAchievement.id]);
+                        const rightIsCompleted = Boolean(completedAchievementIds[rightAchievement.id]);
 
-                        if (leftIsPending === rightIsPending) {
-                            return 0;
+                        if (leftIsPending !== rightIsPending) {
+                            return leftIsPending ? -1 : 1;
                         }
 
-                        return leftIsPending ? -1 : 1;
+                        if (leftIsCompleted !== rightIsCompleted) {
+                            return leftIsCompleted ? 1 : -1;
+                        }
+
+                        return 0;
                     });
 
                     return (
@@ -450,11 +533,12 @@ const Achievements = ({ user }) => {
                                         sortedItems.map((achievement) => {
                                             const achievementFields = getAchievementFields(achievement, categoryImage);
                                             const isPending = Boolean(pendingClaimIds[achievement.id]);
+                                            const isCompleted = Boolean(completedAchievementIds[achievement.id]);
 
                                             return (
                                                 <li
                                                     key={achievement.id}
-                                                    className={`achievement-item achievement-item-clickable ${isPending ? 'achievement-item-pending' : ''}`}
+                                                    className={`achievement-item achievement-item-clickable ${isPending ? 'achievement-item-pending' : ''} ${isCompleted ? 'achievement-item-completed' : ''}`}
                                                     onClick={() => openAchievementModal(achievement, categoryImage)}
                                                     onKeyDown={(event) => {
                                                         if (event.key === 'Enter' || event.key === ' ') {
@@ -474,6 +558,7 @@ const Achievements = ({ user }) => {
                                                         <div className="achievement-item-title-row">
                                                             <div className="achievement-item-title">{achievementFields.name}</div>
                                                             {isPending ? <span className="achievement-status-badge">Pending Review</span> : null}
+                                                            {isCompleted ? <span className="achievement-status-badge achievement-status-badge-completed">Completed</span> : null}
                                                         </div>
                                                         <div className="achievement-item-desc">{achievementFields.description}</div>
                                                     </div>
@@ -530,6 +615,8 @@ const Achievements = ({ user }) => {
                                 <p className="achievement-modal-empty">Log in to claim this achievement.</p>
                             ) : isCheckingPendingClaim ? (
                                 <p className="achievement-modal-empty">Checking claim status...</p>
+                            ) : completedAchievementIds[activeAchievement.id] ? (
+                                <p className="achievement-modal-empty">You have already completed this achievement.</p>
                             ) : hasPendingClaim ? (
                                 <p className="achievement-modal-empty">You already have a pending claim for this achievement.</p>
                             ) : (

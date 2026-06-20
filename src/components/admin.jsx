@@ -83,12 +83,12 @@ const Admin = ({ user }) => {
 
             if (userSnapshot.exists) {
                 const userData = userSnapshot.data() || {};
-                const existingAchievementsMap = userData.achievementsMap && typeof userData.achievementsMap === 'object'
-                    ? userData.achievementsMap
+                const existingAchievementsMap = userData.achievements && typeof userData.achievements === 'object'
+                    ? userData.achievements
                     : {};
 
                 await userRef.set({
-                    achievementsMap: {
+                    achievements: {
                         ...existingAchievementsMap,
                         [claim.achievementId]: claim.photoUrl,
                     },

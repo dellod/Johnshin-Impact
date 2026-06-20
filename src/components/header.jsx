@@ -15,28 +15,63 @@ import db from "../scripts/firebase";
 
 const Header = ({ user }) =>
 {
-    const [userData, setUserData] = useState(null);
     const [username, setUsername] = useState("");
     const [photo, setPhoto] = useState("");
-
-    const fetchUserData = async () => {
-        try {
-            const docSnapshot = await db.collection("users").doc(user.uid).get();
-            if (docSnapshot.exists) {
-                const data = docSnapshot.data();
-                setUserData(data);
-                setUsername(data.username);
-                setPhoto(data.photoUrl);
-            }
-        } catch (error) {
-            console.error("Error fetching user data:", error);
-        }
-    }
+    const [totalPoints, setTotalPoints] = useState(0);
 
     useEffect(() => {
-        if (user) {
-            fetchUserData();
+        if (!user) {
+            setUsername("");
+            setPhoto("");
+            setTotalPoints(0);
+            return;
         }
+
+        const fetchUserData = async () => {
+            try {
+                const docSnapshot = await db.collection("users").doc(user.uid).get();
+                if (docSnapshot.exists) {
+                    const data = docSnapshot.data();
+                    setUsername(data.username || "");
+                    setPhoto(data.photoUrl || data.photoURL || "");
+
+                    const achievementMap = data.achievements && typeof data.achievements === 'object'
+                        ? data.achievements
+                        : {};
+                    const achievementIds = Object.keys(achievementMap);
+
+                    if (achievementIds.length === 0) {
+                        setTotalPoints(0);
+                        return;
+                    }
+
+                    const achievementSnapshots = await Promise.all(
+                        achievementIds.map((achievementId) => db.collection("achievements").doc(achievementId).get())
+                    );
+
+                    const nextTotalPoints = achievementSnapshots.reduce((sum, achievementSnapshot) => {
+                        if (!achievementSnapshot.exists) {
+                            return sum;
+                        }
+
+                        const achievementData = achievementSnapshot.data() || {};
+                        const parsedPoints = Number(achievementData.points ?? 0);
+                        return sum + (Number.isNaN(parsedPoints) ? 0 : parsedPoints);
+                    }, 0);
+
+                    setTotalPoints(nextTotalPoints);
+                } else {
+                    setUsername("");
+                    setPhoto("");
+                    setTotalPoints(0);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                setTotalPoints(0);
+            }
+        };
+
+        fetchUserData();
     }, [user]);
 
     return (
@@ -60,7 +95,7 @@ const Header = ({ user }) =>
                         <span className="welcome-message">{username}</span>
                     </a>
                     <div className="user-points">
-                        <span className="points-label"><img src={Primogem} className="points-icon" alt="Points" /> {0}</span> {/* Placeholder for points, replace with actual points from userData when available */}
+                        <span className="points-label"><img src={Primogem} className="points-icon" alt="Points" /> {totalPoints}</span>
                     </div>
                 </>
 
