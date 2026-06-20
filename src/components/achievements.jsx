@@ -77,6 +77,8 @@ const Achievements = ({ user }) => {
     const [claimSuccess, setClaimSuccess] = useState('');
     const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+    const [hasPendingClaim, setHasPendingClaim] = useState(false);
+    const [isCheckingPendingClaim, setIsCheckingPendingClaim] = useState(false);
 
     useEffect(() => {
         const fetchAchievements = async () => {
@@ -117,6 +119,7 @@ const Achievements = ({ user }) => {
         setClaimPhotoFile(null);
         setClaimError('');
         setClaimSuccess('');
+        setHasPendingClaim(false);
     };
 
     const closeAchievementModal = () => {
@@ -126,6 +129,17 @@ const Achievements = ({ user }) => {
         setClaimError('');
         setClaimSuccess('');
         setIsImagePreviewOpen(false);
+        setHasPendingClaim(false);
+    };
+
+    const checkPendingClaim = async (userId, achievementId) => {
+        const snapshot = await db
+            .collection('achievementClaims')
+            .where('userId', '==', userId)
+            .where('status', '==', 'pending')
+            .get();
+
+        return snapshot.docs.some((doc) => doc.data().achievementId === achievementId);
     };
 
     useEffect(() => {
@@ -149,6 +163,46 @@ const Achievements = ({ user }) => {
             window.removeEventListener('keydown', handleEscape);
         };
     }, [activeAchievement, isImagePreviewOpen]);
+
+    useEffect(() => {
+        if (!activeAchievement || !user) {
+            setHasPendingClaim(false);
+            setIsCheckingPendingClaim(false);
+            return undefined;
+        }
+
+        let isMounted = true;
+
+        const loadPendingClaim = async () => {
+            setIsCheckingPendingClaim(true);
+
+            try {
+                const pending = await checkPendingClaim(user.uid, activeAchievement.id);
+                if (isMounted) {
+                    setHasPendingClaim(pending);
+                    if (pending) {
+                        setIsClaimCaptureOpen(false);
+                        setClaimPhotoFile(null);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking pending achievement claim:', error);
+                if (isMounted) {
+                    setClaimError('Unable to verify existing claim status right now.');
+                }
+            } finally {
+                if (isMounted) {
+                    setIsCheckingPendingClaim(false);
+                }
+            }
+        };
+
+        loadPendingClaim();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [activeAchievement, user]);
 
     const handleClaimSubmit = async () => {
         if (!user) {
@@ -175,6 +229,15 @@ const Achievements = ({ user }) => {
         setIsSubmittingClaim(true);
 
         try {
+            const pending = await checkPendingClaim(user.uid, activeAchievement.id);
+            if (pending) {
+                setHasPendingClaim(true);
+                setIsClaimCaptureOpen(false);
+                setClaimPhotoFile(null);
+                setClaimError('You already have a pending claim for this achievement.');
+                return;
+            }
+
             const formData = new FormData();
             formData.append('file', claimPhotoFile);
             formData.append('upload_preset', uploadPreset);
@@ -204,6 +267,7 @@ const Achievements = ({ user }) => {
                 createdAt: new Date().toISOString(),
             });
 
+            setHasPendingClaim(true);
             setClaimSuccess('Claim submitted successfully.');
             setIsClaimCaptureOpen(false);
             setClaimPhotoFile(null);
@@ -342,6 +406,10 @@ const Achievements = ({ user }) => {
                         <div className="achievement-modal-claim">
                             {!user ? (
                                 <p className="achievement-modal-empty">Log in to claim this achievement.</p>
+                            ) : isCheckingPendingClaim ? (
+                                <p className="achievement-modal-empty">Checking claim status...</p>
+                            ) : hasPendingClaim ? (
+                                <p className="achievement-modal-empty">You already have a pending claim for this achievement.</p>
                             ) : (
                                 <>
                                     {!isClaimCaptureOpen ? (
@@ -353,6 +421,7 @@ const Achievements = ({ user }) => {
                                                 setClaimError('');
                                                 setClaimSuccess('');
                                             }}
+                                            disabled={hasPendingClaim || isCheckingPendingClaim}
                                         >
                                             Claim Achievement
                                         </button>

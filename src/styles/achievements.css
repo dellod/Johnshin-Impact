@@ -366,6 +366,7 @@
     cursor: pointer;
 }
 
+.achievement-claim-btn:disabled,
 .achievement-claim-submit:disabled {
     opacity: 0.55;
     cursor: not-allowed;
