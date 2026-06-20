@@ -7,6 +7,7 @@ import '../styles/header.css';
 
 // Assets
 import Logo from '../assets/john_logo.png'
+import Primogem from '../assets/primogem.png';
 
 // Scripts
 import db from "../scripts/firebase";
@@ -59,7 +60,7 @@ const Header = ({ user }) =>
                         <span className="welcome-message">{username}</span>
                     </a>
                     <div className="user-points">
-                        <span className="points-label">Current Points: {0}</span> {/* Placeholder for points, replace with actual points from userData when available */}
+                        <span className="points-label"><img src={Primogem} className="points-icon" alt="Points" /> {0}</span> {/* Placeholder for points, replace with actual points from userData when available */}
                     </div>
                 </>
 

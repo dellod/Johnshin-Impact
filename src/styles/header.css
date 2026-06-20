@@ -120,7 +120,17 @@
     border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
+.points-icon {
+    width: 1.5em;
+    height: 1.5em;
+    display: block;
+}
+
 .points-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    line-height: 1;
     color: white;
     font-family: 'Neuton', serif;
     font-size: 1.5rem;

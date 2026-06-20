@@ -12,6 +12,7 @@ import Login from './components/login';
 import LoadingScreenVideo from './assets/loading_screen.mp4';
 import LoadingScreenImage from './assets/loading_screen.jpg';
 import Navbar from './components/navbar';
+import Achievements from './components/achievements';
 
 // Scripts
 import { auth } from './scripts/firebase';
@@ -70,9 +71,10 @@ function App() {
         <div className="content-layer">
           <Navbar user={user} />
             <Routes>
-                <Route path="/" element={<Header user={user} />} />
-                <Route path="/signup" element={user ? <Header user={user} /> : <Signup />} />
+              <Route path="/" element={<Header user={user} />} />
+              <Route path="/signup" element={user ? <Header user={user} /> : <Signup />} />
               <Route path="/login" element={user ? <Header user={user} /> : <Login />} />
+              <Route path="/achievements" element={<Achievements user={user} />} />
             </Routes>
         </div>
       </Router>
