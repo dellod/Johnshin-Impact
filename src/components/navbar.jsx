@@ -45,19 +45,23 @@ const Navbar = ({ user }) => {
                     className={`navbar-links ${isMenuOpen ? 'navbar-links-open' : ''}`}
                 >
                     <Link to="/" className="navbar-link" onClick={handleCloseMenu}>Home</Link>
+                    <Link to="/achievements" className="navbar-link" onClick={handleCloseMenu}>Achievements</Link>
                     {!user ? (
                         <>
                             <Link to="/signup" className="navbar-link" onClick={handleCloseMenu}>Sign Up</Link>
                             <Link to="/login" className="navbar-link" onClick={handleCloseMenu}>Login</Link>
                         </>
                     ) : (
-                        <button 
-                            className="navbar-link" 
-                            onClick={handleLogout}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0' }}
-                        >
-                            Logout
-                        </button>
+                        <>
+                            <Link to="/profile" className="navbar-link" onClick={handleCloseMenu}>Profile</Link>
+                            <button
+                                className="navbar-link"
+                                onClick={handleLogout}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0' }}
+                            >
+                                Logout
+                            </button>
+                        </>
                     )}
                 </div>
              </div>
