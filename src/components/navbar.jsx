@@ -1,5 +1,5 @@
 // React libraries
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 // CSS
@@ -13,6 +13,7 @@ import { auth } from "../scripts/firebase";
 
 const Navbar = ({ user }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navRef = useRef(null);
 
     const handleToggleMenu = () => {
         setIsMenuOpen((currentState) => !currentState);
@@ -22,13 +23,37 @@ const Navbar = ({ user }) => {
         setIsMenuOpen(false);
     };
 
+    useEffect(() => {
+        if (!isMenuOpen) {
+            return undefined;
+        }
+
+        const handlePointerDownOutside = (event) => {
+            if (!navRef.current) {
+                return;
+            }
+
+            if (!navRef.current.contains(event.target)) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handlePointerDownOutside);
+        document.addEventListener('touchstart', handlePointerDownOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handlePointerDownOutside);
+            document.removeEventListener('touchstart', handlePointerDownOutside);
+        };
+    }, [isMenuOpen]);
+
     const handleLogout = () => {
         auth.signOut();
         handleCloseMenu();
     };
 
     return(
-        <nav className="navbar">
+        <nav className="navbar" ref={navRef}>
             <div className="">
                 <button
                     type="button"
