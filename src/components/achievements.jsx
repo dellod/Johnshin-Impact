@@ -1,5 +1,6 @@
 // React libraries
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 // CSS
 import '../styles/achievements.css';
@@ -669,7 +670,10 @@ const Achievements = ({ user }) => {
                                 <ul className="achievement-modal-achievers-list">
                                     {achieversWithProfiles.map((achiever) => (
                                         <li key={achiever.id} className="achievement-modal-achiever-item">
-                                            <div className="achievement-modal-achiever-identity">
+                                            <Link
+                                                to={`/profile/${achiever.id}`}
+                                                className="achievement-modal-achiever-identity achievement-modal-achiever-identity-link"
+                                            >
                                                 {achiever.profilePhotoUrl ? (
                                                     <img
                                                         src={achiever.profilePhotoUrl}
@@ -682,7 +686,7 @@ const Achievements = ({ user }) => {
                                                     </span>
                                                 )}
                                                 <p className="achievement-modal-achiever-name">{achiever.username}</p>
-                                            </div>
+                                            </Link>
 
                                             {achiever.submissionPhotoUrl ? (
                                                 <img

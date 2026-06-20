@@ -12,7 +12,6 @@ import Primogem from '../assets/primogem.png';
 // Scripts
 import db from "../scripts/firebase";
 
-
 const Header = ({ user }) =>
 {
     const [username, setUsername] = useState("");
@@ -90,10 +89,10 @@ const Header = ({ user }) =>
             )}
             {user && (
                 <>
-                    <a href="/profile" className="user-info">
+                    <Link to={`/profile/${user.uid}`} className="user-info">
                         {photo && <img className="profile-photo" src={photo} alt={`${username}'s profile`} />}
                         <span className="welcome-message">{username}</span>
-                    </a>
+                    </Link>
                     <div className="user-points">
                         <span className="points-label"><img src={Primogem} className="points-icon" alt="Points" /> {totalPoints}</span>
                     </div>

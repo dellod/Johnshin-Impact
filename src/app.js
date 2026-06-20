@@ -14,6 +14,7 @@ import LoadingScreenImage from './assets/loading_screen.jpg';
 import Navbar from './components/navbar';
 import Achievements from './components/achievements';
 import Admin from './components/admin';
+import Profile from './components/profile';
 
 // Scripts
 import { auth } from './scripts/firebase';
@@ -76,6 +77,7 @@ function App() {
               <Route path="/signup" element={user ? <Header user={user} /> : <Signup />} />
               <Route path="/login" element={user ? <Header user={user} /> : <Login />} />
               <Route path="/achievements" element={<Achievements user={user} />} />
+              <Route path="/profile/:slug" element={<Profile />} />
               <Route path="/admin" element={<Admin user={user} />} />
             </Routes>
         </div>

@@ -53,7 +53,7 @@ const Navbar = ({ user }) => {
                         </>
                     ) : (
                         <>
-                            <Link to="/profile" className="navbar-link" onClick={handleCloseMenu}>Profile</Link>
+                            <Link to={`/profile/${user ? user.uid : ''}`} className="navbar-link" onClick={handleCloseMenu}>Profile</Link>
                             <button
                                 className="navbar-link"
                                 onClick={handleLogout}
