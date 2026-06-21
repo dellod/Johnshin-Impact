@@ -23,31 +23,31 @@ const Header = ({ user }) =>
             setUsername("");
             setPhoto("");
             setTotalPoints(0);
-            return;
+            return undefined;
         }
 
-        const fetchUserData = async () => {
-            try {
-                const docSnapshot = await db.collection("users").doc(user.uid).get();
-                if (docSnapshot.exists) {
-                    const data = docSnapshot.data();
-                    setUsername(data.username || "");
-                    setPhoto(data.photoUrl || data.photoURL || "");
+        setUsername(user.displayName || "");
+        setPhoto(user.photoURL || "");
 
-                    const parsedPoints = Number(data.points ?? 0);
-                    setTotalPoints(Number.isNaN(parsedPoints) ? 0 : parsedPoints);
-                } else {
-                    setUsername("");
-                    setPhoto("");
-                    setTotalPoints(0);
+        const unsubscribe = db.collection("users").doc(user.uid).onSnapshot(
+            (docSnapshot) => {
+                if (!docSnapshot.exists) {
+                    return;
                 }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-                setTotalPoints(0);
-            }
-        };
 
-        fetchUserData();
+                const data = docSnapshot.data() || {};
+                setUsername(data.username || user.displayName || "");
+                setPhoto(data.photoUrl || data.photoURL || user.photoURL || "");
+
+                const parsedPoints = Number(data.points ?? 0);
+                setTotalPoints(Number.isNaN(parsedPoints) ? 0 : parsedPoints);
+            },
+            (error) => {
+                console.error("Error subscribing to user data:", error);
+            }
+        );
+
+        return () => unsubscribe();
     }, [user]);
 
     return (

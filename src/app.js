@@ -1,6 +1,6 @@
 // React libraries
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes, useParams } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Route, Routes, useParams } from "react-router-dom";
 
 // Styles
 import './styles/app.css';
@@ -84,8 +84,8 @@ function App() {
           <Navbar user={user} />
             <Routes>
               <Route path="/" element={<Header user={user} />} />
-              <Route path="/signup" element={user ? <Header user={user} /> : <Signup />} />
-              <Route path="/login" element={user ? <Header user={user} /> : <Login />} />
+              <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
+              <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
               <Route path="/achievements" element={<Achievements user={user} />} />
               <Route path="/leaderboard" element={<Leaderboard user={user} />} />
               <Route path="/profile/:slug" element={<ProfileRoute />} />
