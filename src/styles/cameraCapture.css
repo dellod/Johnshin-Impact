@@ -1,6 +1,8 @@
 .camera-capture {
     display: grid;
     gap: 10px;
+    justify-items: center;
+    margin-inline: auto;
 }
 
 .camera-label {
@@ -42,6 +44,8 @@
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+    justify-content: center;
+    width: min(340px, 84vw);
 }
 
 .camera-btn {

@@ -10,15 +10,23 @@ import CameraCapture from './cameraCapture';
 // Scripts
 import db, { auth } from "../scripts/firebase";
 
-const buildAuthEmail = (username) => `${username.trim().toLowerCase()}@johnshin.local`;
+const USERNAME_PATTERN = /^[a-zA-Z0-9._-]{3,30}$/;
+
+const buildAuthIdentity = (username) => username.trim().toLowerCase();
+const buildAuthEmail = (authIdentity) => `${authIdentity}@johnshin.local`;
+const buildAuthPassword = (authIdentity) => `johnshin-${authIdentity}`;
 
 const getSignupErrorMessage = (error) => {
     if (error?.code === 'auth/email-already-in-use') {
         return 'That username is already taken.';
     }
 
-    if (error?.code === 'auth/invalid-email' || error?.code === 'auth/weak-password') {
-        return 'Unable to create account with that username.';
+    if (error?.code === 'auth/invalid-email') {
+        return 'Username format is invalid. Use 3-30 letters, numbers, dots, dashes, or underscores.';
+    }
+
+    if (error?.code === 'auth/weak-password') {
+        return 'Unable to create account due to auth password policy. Please try a different username.';
     }
 
     return error?.message || 'Unable to upload image right now.';
@@ -52,6 +60,11 @@ const Signup = () =>
         const normalizedUsername = username.trim();
         if (!normalizedUsername) {
             setSubmitError('Username is required.');
+            return;
+        }
+
+        if (!USERNAME_PATTERN.test(normalizedUsername)) {
+            setSubmitError('Username must be 3-30 characters and only use letters, numbers, dots, dashes, or underscores.');
             return;
         }
 
@@ -92,9 +105,11 @@ const Signup = () =>
             }
 
             setSubmitProgress('Saving profile...');
-            const authEmail = buildAuthEmail(normalizedUsername);
+            const authIdentity = buildAuthIdentity(normalizedUsername);
+            const authEmail = buildAuthEmail(authIdentity);
+            const authPassword = buildAuthPassword(authIdentity);
             const authCredential = await timeoutPromise(
-                auth.createUserWithEmailAndPassword(authEmail, normalizedUsername),
+                auth.createUserWithEmailAndPassword(authEmail, authPassword),
                 15000,
                 'Creating Firebase auth user timed out.'
             );

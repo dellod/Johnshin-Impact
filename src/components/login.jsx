@@ -8,7 +8,9 @@ import '../styles/login.css';
 // Scripts
 import { auth } from "../scripts/firebase";
 
-const buildAuthEmail = (username) => `${username.trim().toLowerCase()}@johnshin.local`;
+const buildAuthIdentity = (username) => username.trim().toLowerCase();
+const buildAuthEmail = (authIdentity) => `${authIdentity}@johnshin.local`;
+const buildAuthPassword = (authIdentity) => `johnshin-${authIdentity}`;
 
 const getLoginErrorMessage = (error) => {
     if (error?.code === 'auth/invalid-email' || error?.code === 'auth/user-not-found' || error?.code === 'auth/wrong-password') {
@@ -40,12 +42,25 @@ const Login = () =>
         setIsSubmitting(true);
 
         try {
-            const authEmail = buildAuthEmail(normalizedUsername);
-            await auth.signInWithEmailAndPassword(authEmail, normalizedUsername);
+            const authIdentity = buildAuthIdentity(normalizedUsername);
+            const authEmail = buildAuthEmail(authIdentity);
+            const nextAuthPassword = buildAuthPassword(authIdentity);
+
+            try {
+                await auth.signInWithEmailAndPassword(authEmail, nextAuthPassword);
+            } catch (error) {
+                // Backward compatibility for older accounts created with password=username.
+                if (error?.code !== 'auth/wrong-password') {
+                    throw error;
+                }
+
+                await auth.signInWithEmailAndPassword(authEmail, normalizedUsername);
+            }
+
             setLoginSuccess('Logged in successfully.');
             navigate('/');
         } catch (error) {
-            setLoginError("Invalid username");
+            setLoginError(getLoginErrorMessage(error));
         } finally {
             setIsSubmitting(false);
         }
