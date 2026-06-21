@@ -370,7 +370,7 @@ const Achievements = ({ user }) => {
         }
 
         const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = process.env.REACT_APP_CLOUDINARY_PROFILE_UPLOAD_PRESET;
+        const uploadPreset = process.env.REACT_APP_CLOUDINARY_ACHIEVEMENT_CLAIM_UPLOAD_PRESET;
         const uploadFolder = process.env.REACT_APP_CLOUDINARY_ACHIEVEMENT_CLAIM_UPLOAD_FOLDER;
 
         if (!cloudName || !uploadPreset) {
