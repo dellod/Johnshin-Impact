@@ -522,15 +522,26 @@ const Achievements = ({ user }) => {
                         const leftIsCompleted = Boolean(completedAchievementIds[leftAchievement.id]);
                         const rightIsCompleted = Boolean(completedAchievementIds[rightAchievement.id]);
 
+                        // Keep pending claims at the top.
                         if (leftIsPending !== rightIsPending) {
                             return leftIsPending ? -1 : 1;
                         }
 
+                        // Keep completed claims at the bottom.
                         if (leftIsCompleted !== rightIsCompleted) {
                             return leftIsCompleted ? 1 : -1;
                         }
 
-                        return 0;
+                        const leftPoints = Number(leftAchievement.points ?? 0);
+                        const rightPoints = Number(rightAchievement.points ?? 0);
+                        const nextLeftPoints = Number.isNaN(leftPoints) ? 0 : leftPoints;
+                        const nextRightPoints = Number.isNaN(rightPoints) ? 0 : rightPoints;
+
+                        if (nextLeftPoints !== nextRightPoints) {
+                            return nextLeftPoints - nextRightPoints;
+                        }
+
+                        return (leftAchievement.name || '').localeCompare(rightAchievement.name || '');
                     });
 
                     return (

@@ -62,6 +62,9 @@ const Profile = () =>
                         .map((achievementSnapshot) => {
                             const achievementData = achievementSnapshot.data() || {};
                             const parsedPoints = Number(achievementData.points ?? 0);
+                            const achievedUsersMap = achievementData.achievedUsersMap && typeof achievementData.achievedUsersMap === 'object'
+                                ? achievementData.achievedUsersMap
+                                : {};
 
                             return {
                                 id: achievementSnapshot.id,
@@ -70,7 +73,8 @@ const Profile = () =>
                                 category: achievementData.category || 'Uncategorized',
                                 image: achievementData.icon || '',
                                 description: achievementData.description || 'No description yet.',
-                                achievedUsersMap: achievementData.achievedUsersMap || {},
+                                achievedUsersMap,
+                                submissionPhotoUrl: achievedUsersMap[slug] || '',
                             };
                         });
 
@@ -225,6 +229,14 @@ const Profile = () =>
                                     <img src={PointsIcon} className="profile-achievement-points-icon" alt="" aria-hidden="true" />
                                     {achievement.points}
                                 </span>
+
+                                {achievement.submissionPhotoUrl ? (
+                                    <img
+                                        src={achievement.submissionPhotoUrl}
+                                        alt={`${achievement.name} submission`}
+                                        className="profile-achievement-submission"
+                                    />
+                                ) : null}
                             </li>
                         ))}
                     </ul>
