@@ -243,28 +243,28 @@ const Achievements = ({ user }) => {
             const nextAchievers = [];
 
             if (rawAchievers && typeof rawAchievers === 'object' && !Array.isArray(rawAchievers)) {
-                for (const [userId, submissionPhotoUrl] of Object.entries(rawAchievers)) {
+                const achieverEntries = Object.entries(rawAchievers);
+                const userDocs = await Promise.all(
+                    achieverEntries.map(([userId]) =>
+                        db.collection('users').doc(userId).get().catch(() => null)
+                    )
+                );
+                achieverEntries.forEach(([userId, submissionPhotoUrl], index) => {
+                    const userDoc = userDocs[index];
                     let username = 'Unknown user';
                     let profilePhotoUrl = '';
-
-                    try {
-                        const userDoc = await db.collection('users').doc(userId).get();
-                        if (userDoc.exists) {
-                            const userData = userDoc.data() || {};
-                            username = userData.username || username;
-                            profilePhotoUrl = userData.photoUrl || userData.photoURL || '';
-                        }
-                    } catch (error) {
-                        console.error(`Error loading user profile for ${userId}:`, error);
+                    if (userDoc && userDoc.exists) {
+                        const userData = userDoc.data() || {};
+                        username = userData.username || username;
+                        profilePhotoUrl = userData.photoUrl || userData.photoURL || '';
                     }
-
                     nextAchievers.push({
                         id: userId,
                         username,
                         profilePhotoUrl,
                         submissionPhotoUrl: submissionPhotoUrl || '',
                     });
-                }
+                });
             } else if (Array.isArray(rawAchievers)) {
                 rawAchievers.forEach((entry, index) => {
                     if (typeof entry === 'string' && entry) {

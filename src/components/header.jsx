@@ -34,31 +34,8 @@ const Header = ({ user }) =>
                     setUsername(data.username || "");
                     setPhoto(data.photoUrl || data.photoURL || "");
 
-                    const achievementMap = data.achievements && typeof data.achievements === 'object'
-                        ? data.achievements
-                        : {};
-                    const achievementIds = Object.keys(achievementMap);
-
-                    if (achievementIds.length === 0) {
-                        setTotalPoints(0);
-                        return;
-                    }
-
-                    const achievementSnapshots = await Promise.all(
-                        achievementIds.map((achievementId) => db.collection("achievements").doc(achievementId).get())
-                    );
-
-                    const nextTotalPoints = achievementSnapshots.reduce((sum, achievementSnapshot) => {
-                        if (!achievementSnapshot.exists) {
-                            return sum;
-                        }
-
-                        const achievementData = achievementSnapshot.data() || {};
-                        const parsedPoints = Number(achievementData.points ?? 0);
-                        return sum + (Number.isNaN(parsedPoints) ? 0 : parsedPoints);
-                    }, 0);
-
-                    setTotalPoints(nextTotalPoints);
+                    const parsedPoints = Number(data.points ?? 0);
+                    setTotalPoints(Number.isNaN(parsedPoints) ? 0 : parsedPoints);
                 } else {
                     setUsername("");
                     setPhoto("");

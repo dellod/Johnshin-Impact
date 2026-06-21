@@ -114,7 +114,7 @@ const Signup = () =>
                     favJohn: favJohn.trim(),
                     photoUrl: result.secure_url,
                     points: 0,
-                    achievements: []
+                    achievements: {}
                 }),
                 15000,
                 'Saving to Firebase timed out. Check Firestore rules and Firebase config.'
@@ -122,7 +122,10 @@ const Signup = () =>
 
             setSubmitSuccess('Signup successful.');
             setSubmitProgress('');
-            console.log('Cloudinary uploaded image URL:', result.secure_url);
+            // Clear form after successful signup
+            setUsername('');
+            setFavJohn('');
+            setPhotoFile(null);
         } catch (error) {
             setSubmitProgress('');
             setSubmitError(getSignupErrorMessage(error));
@@ -135,8 +138,8 @@ const Signup = () =>
         <div className="signup">
             <h1>Signup</h1>
             <form className="signup-form" onSubmit={handleSubmit}>
-                <input type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)} required />
-                <input type="text" placeholder="Fav thing about John?" onChange={(e) => setFavJohn(e.target.value)} required />
+                <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                <input type="text" placeholder="Fav thing about John?" value={favJohn} onChange={(e) => setFavJohn(e.target.value)} required />
                 <CameraCapture onCapture={(file) => {
                     setPhotoFile(file);
                     if (file) {

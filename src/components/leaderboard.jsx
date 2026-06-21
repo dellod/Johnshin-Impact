@@ -24,30 +24,13 @@ const Leaderboard = ({ user }) => {
 
                 // Fetch all users
                 const usersSnapshot = await db.collection('users').get();
-                const achievementPointMapSnapshot = await db.collection('achievements').get();
 
-                // Build achievement points map
-                const achievementPointMap = {};
-                achievementPointMapSnapshot.forEach((doc) => {
-                    const data = doc.data() || {};
-                    const parsedPoints = Number(data.points ?? 0);
-                    achievementPointMap[doc.id] = Number.isNaN(parsedPoints) ? 0 : parsedPoints;
-                });
-
-                // Process users and calculate points
+                // Process users using denormalized points
                 const users = [];
                 usersSnapshot.forEach((doc) => {
                     const userData = doc.data() || {};
-                    const achievementMap = userData.achievements && typeof userData.achievements === 'object'
-                        ? userData.achievements
-                        : {};
-                    const achievementIds = Object.keys(achievementMap);
-
-                    // Calculate total points from achievement IDs
-                    const totalPoints = achievementIds.reduce((sum, achievementId) => {
-                        const points = achievementPointMap[achievementId];
-                        return sum + (typeof points === 'number' ? points : 0);
-                    }, 0);
+                    const parsedPoints = Number(userData.points ?? 0);
+                    const totalPoints = Number.isNaN(parsedPoints) ? 0 : parsedPoints;
 
                     users.push({
                         id: doc.id,

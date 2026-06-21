@@ -62,6 +62,7 @@ const Admin = ({ user }) => {
             const achievementRef = db.collection('achievements').doc(claim.achievementId);
             const claimRef = db.collection('achievementClaims').doc(claim.id);
             const userRef = db.collection('users').doc(claim.userId);
+
             const achievementSnapshot = await achievementRef.get();
             const userSnapshot = await userRef.get();
 
@@ -69,33 +70,22 @@ const Admin = ({ user }) => {
                 throw new Error('Achievement no longer exists.');
             }
 
-            const achievementData = achievementSnapshot.data() || {};
-            const existingUserMap = achievementData.achievedUsersMap && typeof achievementData.achievedUsersMap === 'object'
-                ? achievementData.achievedUsersMap
-                : {};
+            // Calculate new total points
+            const userData = userSnapshot.exists ? (userSnapshot.data() || {}) : {};
+            const currentPoints = userData.points || 0;
+            const newPoints = currentPoints + (Number(claim.achievementPoints) || 0);
 
-            await achievementRef.set({
-                achievedUsersMap: {
-                    ...existingUserMap,
-                    [claim.userId]: claim.photoUrl,
-                },
-            }, { merge: true });
+            const batch = db.batch();
+            batch.update(achievementRef, {
+                [`achievedUsersMap.${claim.userId}`]: claim.photoUrl,
+            });
+            batch.update(userRef, {
+                [`achievements.${claim.achievementId}`]: claim.photoUrl,
+                points: newPoints,
+            });
+            batch.delete(claimRef);
+            await batch.commit();
 
-            if (userSnapshot.exists) {
-                const userData = userSnapshot.data() || {};
-                const existingAchievementsMap = userData.achievements && typeof userData.achievements === 'object'
-                    ? userData.achievements
-                    : {};
-
-                await userRef.set({
-                    achievements: {
-                        ...existingAchievementsMap,
-                        [claim.achievementId]: claim.photoUrl,
-                    },
-                }, { merge: true });
-            }
-
-            await claimRef.delete();
             removeClaimFromList(claim.id);
         } catch (error) {
             console.error('Error approving achievement claim:', error);
