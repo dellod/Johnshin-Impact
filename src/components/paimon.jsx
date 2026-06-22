@@ -3,11 +3,13 @@ import '../styles/paimon.css';
 import PaimonImage from '../assets/paimon.png';
 
 const TIPS = [
-    "Check the leaderboard to see how you rank against other travelers.",
-    "Visit user profiles to see their achievements and completed missions.",
-    "Did you know, John's favourite character is Raiden Shogun",
+    "Did you know, John's favourite character from Genshin Impact is Raiden Shogun",
     "Thirsty? Make sure to drink henny shots to earn achievements!",
-    "Every point brings you closer to the top of the leaderboard.",
+    "Did you know, John loved to take naps during his Rona shifts?",
+    "Did you know, John can bench 10 plates on each side?",
+    "Did you know, one of John's favourite animes of all time is Reincarnated as a Slime?",
+    "Did you know, one of John's least favourite animes of all time is Bleach?",
+    "Did you know, one year, John cosplayed as Raiden Shogun for Otafest!"
 ];
 
 const INITIAL_MIN_DELAY_MS = 60 * 1000;
