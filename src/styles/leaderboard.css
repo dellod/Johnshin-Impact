@@ -109,6 +109,46 @@
     min-width: 0;
 }
 
+.leaderboard-user-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.leaderboard-ar-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.leaderboard-ar-rank {
+    color: rgba(176, 213, 255, 0.7);
+    font-family: 'Neuton', serif;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.leaderboard-ar-stars {
+    display: flex;
+    gap: 2px;
+}
+
+.leaderboard-ar-star {
+    font-size: 0.72rem;
+    line-height: 1;
+}
+
+.leaderboard-ar-star--filled {
+    color: #f0c060;
+    text-shadow: 0 0 5px rgba(240, 192, 96, 0.6);
+}
+
+.leaderboard-ar-star--empty {
+    color: rgba(80, 110, 150, 0.35);
+}
+
 .leaderboard-avatar {
     width: 40px;
     height: 40px;

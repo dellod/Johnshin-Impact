@@ -14,6 +14,46 @@ import AchievementDetailsModal from './achievementDetailsModal';
 // Scripts
 import db from "../scripts/firebase";
 
+// Adventure rank constants
+const MAX_AR_LEVEL = 60;
+const AR_LEVEL_CAP_POINTS = 1200; // level 60 is reached at 1200 pts; points above this are surplus
+
+// Returns cumulative XP threshold for a given level (1-indexed)
+function arThreshold(level) {
+    if (level <= 1) return 0;
+    return Math.round(AR_LEVEL_CAP_POINTS * Math.pow((level - 1) / (MAX_AR_LEVEL - 1), 1.5));
+}
+
+function getAdventureRank(points) {
+    const capped = Math.min(points, AR_LEVEL_CAP_POINTS);
+    for (let lvl = MAX_AR_LEVEL; lvl >= 1; lvl--) {
+        if (capped >= arThreshold(lvl)) return lvl;
+    }
+    return 1;
+}
+
+function getARProgress(points) {
+    const level = getAdventureRank(points);
+    if (level >= MAX_AR_LEVEL) return { intoLevel: 0, levelSize: 0, percentage: 100 };
+    const capped = Math.min(points, AR_LEVEL_CAP_POINTS);
+    const currentThreshold = arThreshold(level);
+    const nextThreshold = arThreshold(level + 1);
+    const levelSize = nextThreshold - currentThreshold;
+    const intoLevel = capped - currentThreshold;
+    const percentage = levelSize > 0 ? Math.round((intoLevel / levelSize) * 100) : 100;
+    return { intoLevel, levelSize, percentage };
+}
+
+function getAscensionPhase(level) {
+    if (level >= 55) return 6;
+    if (level >= 50) return 5;
+    if (level >= 45) return 4;
+    if (level >= 35) return 3;
+    if (level >= 25) return 2;
+    if (level >= 15) return 1;
+    return 0;
+}
+
 const Profile = () =>
 {
     const { slug } = useParams();
@@ -188,6 +228,43 @@ const Profile = () =>
                 <img src={PointsIcon} className="profile-points-icon" alt="Points" />
                 <span className="profile-points-value">{totalPoints}</span>
             </div>
+
+            {(() => {
+                const adventureRank = getAdventureRank(totalPoints);
+                const arProgress = getARProgress(totalPoints);
+                const ascensionPhase = getAscensionPhase(adventureRank);
+                return (
+                    <div className="profile-ar">
+                        <div className="profile-ar-top">
+                            <span className="profile-ar-label">Adventure Rank</span>
+                            <span className="profile-ar-level">{adventureRank}</span>
+                        </div>
+                        <div className="profile-ar-stars" aria-label={`Ascension phase ${ascensionPhase} of 6`}>
+                            {Array.from({ length: 6 }, (_, i) => (
+                                <span
+                                    key={i}
+                                    className={`profile-ar-star${i < ascensionPhase ? ' profile-ar-star--filled' : ' profile-ar-star--empty'}`}
+                                    aria-hidden="true"
+                                >✦</span>
+                            ))}
+                        </div>
+                        <div
+                            className="profile-ar-bar"
+                            role="progressbar"
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={arProgress.percentage}
+                        >
+                            <div className="profile-ar-bar-fill" style={{ width: `${arProgress.percentage}%` }} />
+                        </div>
+                        {adventureRank < MAX_AR_LEVEL ? (
+                            <p className="profile-ar-progress-text">{arProgress.intoLevel} / {arProgress.levelSize} points to next rank</p>
+                        ) : (
+                            <p className="profile-ar-progress-text">Max Rank</p>
+                        )}
+                    </div>
+                );
+            })()}
 
             <section className="profile-achievements" aria-label="Completed achievements">
                 <h2 className="profile-achievements-title">Completed Achievements</h2>

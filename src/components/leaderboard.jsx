@@ -11,6 +11,33 @@ import PointsIcon from '../assets/primogem.png';
 // Scripts
 import db from "../scripts/firebase";
 
+// Adventure rank helpers (mirrors profile.jsx)
+const MAX_AR_LEVEL = 60;
+const AR_LEVEL_CAP_POINTS = 1200;
+
+function arThreshold(level) {
+    if (level <= 1) return 0;
+    return Math.round(AR_LEVEL_CAP_POINTS * Math.pow((level - 1) / (MAX_AR_LEVEL - 1), 1.5));
+}
+
+function getAdventureRank(points) {
+    const capped = Math.min(points, AR_LEVEL_CAP_POINTS);
+    for (let lvl = MAX_AR_LEVEL; lvl >= 1; lvl--) {
+        if (capped >= arThreshold(lvl)) return lvl;
+    }
+    return 1;
+}
+
+function getAscensionPhase(level) {
+    if (level >= 55) return 6;
+    if (level >= 50) return 5;
+    if (level >= 45) return 4;
+    if (level >= 35) return 3;
+    if (level >= 25) return 2;
+    if (level >= 15) return 1;
+    return 0;
+}
+
 const Leaderboard = ({ user }) => {
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -99,6 +126,8 @@ const Leaderboard = ({ user }) => {
                             const rank = index + 1;
                             const isCurrentUser = user && user.uid === leaderboardUser.id;
                             const medal = getMedalEmoji(rank);
+                            const adventureRank = getAdventureRank(leaderboardUser.points);
+                            const ascensionPhase = getAscensionPhase(adventureRank);
 
                             return (
                                 <li
@@ -128,9 +157,19 @@ const Leaderboard = ({ user }) => {
                                             )}
                                         </Link>
 
-                                        <Link to={`/profile/${leaderboardUser.id}`} className="leaderboard-username-link">
-                                            <span className="leaderboard-username">{leaderboardUser.username}</span>
-                                        </Link>
+                                        <div className="leaderboard-user-meta">
+                                            <Link to={`/profile/${leaderboardUser.id}`} className="leaderboard-username-link">
+                                                <span className="leaderboard-username">{leaderboardUser.username}</span>
+                                            </Link>
+                                            <div className="leaderboard-ar-info" aria-label={`Adventure Rank ${adventureRank}, Ascension phase ${ascensionPhase}`}>
+                                                <span className="leaderboard-ar-rank">AR {adventureRank}</span>
+                                                <div className="leaderboard-ar-stars" aria-hidden="true">
+                                                    {Array.from({ length: 6 }, (_, i) => (
+                                                        <span key={i} className={`leaderboard-ar-star${i < ascensionPhase ? ' leaderboard-ar-star--filled' : ' leaderboard-ar-star--empty'}`}>✦</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="leaderboard-points" aria-label={`Points ${leaderboardUser.points}`}>

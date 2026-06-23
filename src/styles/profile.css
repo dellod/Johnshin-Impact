@@ -7,6 +7,84 @@
     box-sizing: border-box;
 }
 
+/* ── Adventure Rank ── */
+.profile-ar {
+    width: min(400px, 100%);
+    margin-bottom: 24px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(124, 177, 242, 0.35);
+    background: rgba(9, 27, 56, 0.45);
+    backdrop-filter: blur(3px);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-ar-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.profile-ar-label {
+    color: rgba(176, 213, 255, 0.8);
+    font-family: 'Neuton', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.profile-ar-level {
+    color: #eef7ff;
+    font-family: 'Neuton', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.profile-ar-stars {
+    display: flex;
+    gap: 5px;
+}
+
+.profile-ar-star {
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+.profile-ar-star--filled {
+    color: #f0c060;
+    text-shadow: 0 0 8px rgba(240, 192, 96, 0.65);
+}
+
+.profile-ar-star--empty {
+    color: rgba(80, 110, 150, 0.38);
+}
+
+.profile-ar-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(56, 124, 232, 0.18);
+    border: 1px solid rgba(124, 177, 242, 0.22);
+    overflow: hidden;
+}
+
+.profile-ar-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(86, 154, 255, 0.85), rgba(168, 210, 255, 0.95));
+    transition: width 0.4s ease;
+}
+
+.profile-ar-progress-text {
+    margin: 0;
+    color: rgba(176, 213, 255, 0.6);
+    font-size: 0.8rem;
+    text-align: right;
+}
+
 .username-title {
     color: white;
     font-size: clamp(3rem, 5vw, 3.5rem);
