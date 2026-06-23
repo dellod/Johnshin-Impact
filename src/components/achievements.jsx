@@ -74,6 +74,7 @@ const Achievements = ({ user }) => {
     const [achievementsByCategory, setAchievementsByCategory] = useState({});
     const [achievementPointMap, setAchievementPointMap] = useState({});
     const [totalAchievementCount, setTotalAchievementCount] = useState(0);
+    const [totalUsersCount, setTotalUsersCount] = useState(0);
     const [earnedAchievementCount, setEarnedAchievementCount] = useState(0);
     const [completedAchievementIds, setCompletedAchievementIds] = useState({});
     const [totalPoints, setTotalPoints] = useState(0);
@@ -95,12 +96,15 @@ const Achievements = ({ user }) => {
     useEffect(() => {
         const fetchAchievements = async () => {
             try {
-                const snapshot = await db.collection("achievements").get();
+                const [achievementSnapshot, usersSnapshot] = await Promise.all([
+                    db.collection("achievements").get(),
+                    db.collection("users").get(),
+                ]);
                 const grouped = {};
                 const nextAchievementPointMap = {};
                 CATEGORIES.forEach((cat) => { grouped[cat] = []; });
 
-                snapshot.forEach((doc) => {
+                achievementSnapshot.forEach((doc) => {
                     const data = { id: doc.id, ...doc.data() };
                     const parsedPoints = Number(data.points ?? 0);
                     nextAchievementPointMap[doc.id] = Number.isNaN(parsedPoints) ? 0 : parsedPoints;
@@ -111,7 +115,8 @@ const Achievements = ({ user }) => {
 
                 setAchievementsByCategory(grouped);
                 setAchievementPointMap(nextAchievementPointMap);
-                setTotalAchievementCount(snapshot.size);
+                setTotalAchievementCount(achievementSnapshot.size);
+                setTotalUsersCount(usersSnapshot.size);
             } catch (error) {
                 console.error("Error fetching achievements:", error);
                 setFetchError("Failed to load achievements.");
@@ -568,6 +573,10 @@ const Achievements = ({ user }) => {
                                             const achievementFields = getAchievementFields(achievement, categoryImage);
                                             const isPending = Boolean(pendingClaimIds[achievement.id]);
                                             const isCompleted = Boolean(completedAchievementIds[achievement.id]);
+                                            const achievedCount = achievementFields.achievers.length;
+                                            const progressPercentage = totalUsersCount > 0
+                                                ? Math.round((achievedCount / totalUsersCount) * 100)
+                                                : 0;
 
                                             return (
                                                 <li
@@ -596,6 +605,17 @@ const Achievements = ({ user }) => {
                                                             {isCompleted ? <span className="achievement-status-badge achievement-status-badge-completed">Completed</span> : null}
                                                         </div>
                                                         <div className="achievement-item-desc">{achievementFields.description}</div>
+                                                        <div className="achievement-item-progress" aria-label={`${achievedCount} of ${totalUsersCount} players`}>
+                                                            <div className="achievement-item-progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercentage}>
+                                                                <div
+                                                                    className="achievement-item-progress-fill"
+                                                                    style={{ width: `${Math.min(100, progressPercentage)}%` }}
+                                                                />
+                                                            </div>
+                                                            <div className="achievement-item-progress-text">
+                                                                {achievedCount}/{totalUsersCount} players
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <div className="achievement-item-points" aria-label={`${achievementFields.points}`}>
