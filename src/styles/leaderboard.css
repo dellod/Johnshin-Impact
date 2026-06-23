@@ -89,6 +89,7 @@
 }
 
 .leaderboard-rank {
+    grid-area: rank;
     text-align: center;
     color: rgba(176, 213, 255, 0.8);
     font-family: 'Neuton', serif;
@@ -103,6 +104,7 @@
 }
 
 .leaderboard-user-info {
+    grid-area: user;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -200,6 +202,7 @@
 }
 
 .leaderboard-points {
+    grid-area: points;
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -208,10 +211,10 @@
     font-family: 'Neuton', serif;
     font-size: 1.1rem;
     font-weight: 600;
-    background: rgba(56, 124, 232, 0.25);
-    border: 1px solid rgba(124, 177, 242, 0.45);
-    border-radius: 999px;
-    padding: 6px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
     white-space: nowrap;
 }
 
@@ -233,4 +236,77 @@
     text-align: center;
     color: rgba(176, 213, 255, 0.8);
     font-size: 1.05rem;
+}
+
+@media (max-width: 700px) {
+    .leaderboard-container {
+        border-radius: 12px;
+    }
+
+    .leaderboard-header {
+        display: none;
+    }
+
+    .leaderboard-item {
+        grid-template-columns: 44px minmax(0, 1fr) auto;
+        grid-template-areas:
+            "rank user points";
+        align-items: center;
+        gap: 8px 12px;
+        padding: 12px 14px;
+    }
+
+    .leaderboard-item-current {
+        padding-left: 10px;
+    }
+
+    .leaderboard-rank {
+        align-self: center;
+        justify-self: start;
+    }
+
+    .leaderboard-rank-medal {
+        font-size: 1.2rem;
+        margin-bottom: 2px;
+    }
+
+    .leaderboard-user-info {
+        justify-self: stretch;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+    .leaderboard-user-meta {
+        align-items: flex-start;
+    }
+
+    .leaderboard-avatar,
+    .leaderboard-avatar-fallback {
+        width: 34px;
+        height: 34px;
+    }
+
+    .leaderboard-username {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: initial;
+        line-height: 1.15;
+        text-align: left;
+    }
+
+    .leaderboard-ar-info {
+        flex-wrap: wrap;
+        row-gap: 3px;
+        column-gap: 5px;
+    }
+
+    .leaderboard-points {
+        align-self: center;
+        justify-self: end;
+        justify-content: flex-end;
+        font-size: 1rem;
+        min-width: 0;
+        padding: 0;
+        max-width: 100%;
+    }
 }
