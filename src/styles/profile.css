@@ -85,6 +85,122 @@
     text-align: right;
 }
 
+.profile-rivalry {
+    width: min(720px, 100%);
+    margin-bottom: 24px;
+    border-radius: 14px;
+    border: 1px solid rgba(124, 177, 242, 0.35);
+    background: rgba(9, 27, 56, 0.45);
+    backdrop-filter: blur(3px);
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.profile-rivalry-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.profile-rivalry-title {
+    margin: 0;
+    color: #eef7ff;
+    font-family: 'Neuton', serif;
+    font-size: 1.45rem;
+}
+
+.profile-rivalry-rank {
+    margin: 0;
+    color: rgba(176, 213, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.profile-rivalry-list {
+    display: grid;
+    gap: 8px;
+}
+
+.profile-rivalry-item {
+    display: grid;
+    gap: 6px;
+}
+
+.profile-rivalry-label {
+    color: rgba(176, 213, 255, 0.75);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.profile-rivalry-player {
+    display: grid;
+    grid-template-columns: 38px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    border: 1px solid rgba(124, 177, 242, 0.28);
+    border-radius: 10px;
+    background: rgba(56, 124, 232, 0.12);
+    padding: 8px 10px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.profile-rivalry-player:hover {
+    background: rgba(56, 124, 232, 0.18);
+}
+
+.profile-rivalry-player:focus-visible {
+    outline: 2px solid rgba(186, 222, 255, 0.9);
+    outline-offset: 2px;
+}
+
+.profile-rivalry-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(124, 177, 242, 0.45);
+}
+
+.profile-rivalry-avatar-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(56, 124, 232, 0.4);
+    color: rgba(220, 239, 255, 0.9);
+    font-weight: 600;
+}
+
+.profile-rivalry-name {
+    color: #ffffff;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-rivalry-points {
+    color: rgba(217, 235, 255, 0.92);
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.profile-rivalry-empty,
+.profile-rivalry-edge {
+    margin: 0;
+    color: rgba(176, 213, 255, 0.75);
+    font-size: 0.9rem;
+}
+
+.profile-rivalry-gap {
+    margin: 0;
+    color: rgba(176, 213, 255, 0.78);
+    font-size: 0.82rem;
+    padding-left: 4px;
+}
+
 .username-title {
     color: white;
     font-size: clamp(3rem, 5vw, 3.5rem);

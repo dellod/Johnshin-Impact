@@ -1,6 +1,6 @@
 // React libraries
 import React, { useState, useEffect } from "react"
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 // Styles
 import '../styles/profile.css';
@@ -64,6 +64,8 @@ const Profile = () =>
     const [activeAchievement, setActiveAchievement] = useState(null);
     const [achieversWithProfiles, setAchieversWithProfiles] = useState([]);
     const [isLoadingAchievers, setIsLoadingAchievers] = useState(false);
+    const [rivalryData, setRivalryData] = useState(null);
+    const [isLoadingRivalry, setIsLoadingRivalry] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -138,6 +140,70 @@ const Profile = () =>
         };
 
         fetchUserData();
+    }, [slug]);
+
+    useEffect(() => {
+        const fetchRivalryData = async () => {
+            if (!slug) {
+                setRivalryData(null);
+                setIsLoadingRivalry(false);
+                return;
+            }
+
+            setIsLoadingRivalry(true);
+
+            try {
+                const usersSnapshot = await db.collection('users').get();
+                const users = [];
+
+                usersSnapshot.forEach((doc) => {
+                    const userData = doc.data() || {};
+                    const parsedPoints = Number(userData.points ?? 0);
+                    const points = Number.isNaN(parsedPoints) ? 0 : parsedPoints;
+
+                    users.push({
+                        id: doc.id,
+                        username: userData.username || 'Unknown user',
+                        photoUrl: userData.photoUrl || userData.photoURL || '',
+                        points,
+                    });
+                });
+
+                users.sort((leftUser, rightUser) => {
+                    if (rightUser.points !== leftUser.points) {
+                        return rightUser.points - leftUser.points;
+                    }
+
+                    return leftUser.username.localeCompare(rightUser.username);
+                });
+
+                const currentUserIndex = users.findIndex((leaderboardUser) => leaderboardUser.id === slug);
+
+                if (currentUserIndex === -1) {
+                    setRivalryData(null);
+                    return;
+                }
+
+                const abovePlayer = currentUserIndex > 0 ? users[currentUserIndex - 1] : null;
+                const belowPlayer = currentUserIndex < users.length - 1 ? users[currentUserIndex + 1] : null;
+                const currentPlayer = users[currentUserIndex];
+
+                setRivalryData({
+                    rank: currentUserIndex + 1,
+                    totalPlayers: users.length,
+                    currentPlayerPoints: currentPlayer.points,
+                    abovePlayer,
+                    belowPlayer,
+                });
+            } catch (error) {
+                console.error('Error fetching rivalry data:', error);
+                setRivalryData(null);
+            } finally {
+                setIsLoadingRivalry(false);
+            }
+        };
+
+        fetchRivalryData();
     }, [slug]);
 
     const openAchievementModal = async (achievement) => {
@@ -265,6 +331,79 @@ const Profile = () =>
                     </div>
                 );
             })()}
+
+            <section className="profile-rivalry" aria-label="Rivalry standings">
+                <div className="profile-rivalry-header">
+                    <h2 className="profile-rivalry-title">Rivalry</h2>
+                    {rivalryData ? (
+                        <p className="profile-rivalry-rank">Rank {rivalryData.rank}/{rivalryData.totalPlayers}</p>
+                    ) : null}
+                </div>
+
+                {isLoadingRivalry ? (
+                    <p className="profile-rivalry-empty">Loading rivalry...</p>
+                ) : !rivalryData ? (
+                    <p className="profile-rivalry-empty">Rivalry data unavailable right now.</p>
+                ) : (
+                    <div className="profile-rivalry-list">
+                        <div className="profile-rivalry-item">
+                            <span className="profile-rivalry-label">Above</span>
+                            {rivalryData.abovePlayer ? (
+                                <>
+                                    <Link className="profile-rivalry-player" to={`/profile/${rivalryData.abovePlayer.id}`}>
+                                        {rivalryData.abovePlayer.photoUrl ? (
+                                            <img
+                                                className="profile-rivalry-avatar"
+                                                src={rivalryData.abovePlayer.photoUrl}
+                                                alt={`${rivalryData.abovePlayer.username} profile`}
+                                            />
+                                        ) : (
+                                            <span className="profile-rivalry-avatar profile-rivalry-avatar-fallback" aria-hidden="true">
+                                                {((rivalryData.abovePlayer.username || '').slice(0, 1).toUpperCase()) || '?'}
+                                            </span>
+                                        )}
+                                        <span className="profile-rivalry-name">{rivalryData.abovePlayer.username}</span>
+                                        <span className="profile-rivalry-points">{rivalryData.abovePlayer.points} pts</span>
+                                    </Link>
+                                    <p className="profile-rivalry-gap">
+                                        {Math.max(0, rivalryData.abovePlayer.points - rivalryData.currentPlayerPoints)} pts to catch up
+                                    </p>
+                                </>
+                            ) : (
+                                <p className="profile-rivalry-edge">This player is currently at the top.</p>
+                            )}
+                        </div>
+
+                        <div className="profile-rivalry-item">
+                            <span className="profile-rivalry-label">Below</span>
+                            {rivalryData.belowPlayer ? (
+                                <>
+                                    <Link className="profile-rivalry-player" to={`/profile/${rivalryData.belowPlayer.id}`}>
+                                        {rivalryData.belowPlayer.photoUrl ? (
+                                            <img
+                                                className="profile-rivalry-avatar"
+                                                src={rivalryData.belowPlayer.photoUrl}
+                                                alt={`${rivalryData.belowPlayer.username} profile`}
+                                            />
+                                        ) : (
+                                            <span className="profile-rivalry-avatar profile-rivalry-avatar-fallback" aria-hidden="true">
+                                                {((rivalryData.belowPlayer.username || '').slice(0, 1).toUpperCase()) || '?'}
+                                            </span>
+                                        )}
+                                        <span className="profile-rivalry-name">{rivalryData.belowPlayer.username}</span>
+                                        <span className="profile-rivalry-points">{rivalryData.belowPlayer.points} pts</span>
+                                    </Link>
+                                    <p className="profile-rivalry-gap">
+                                        {Math.max(0, rivalryData.currentPlayerPoints - rivalryData.belowPlayer.points)} pts lead
+                                    </p>
+                                </>
+                            ) : (
+                                <p className="profile-rivalry-edge">This player is currently at the bottom.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </section>
 
             <section className="profile-achievements" aria-label="Completed achievements">
                 <h2 className="profile-achievements-title">Completed Achievements</h2>

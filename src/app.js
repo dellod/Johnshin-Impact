@@ -24,9 +24,9 @@ import { auth } from './scripts/firebase';
 
 const LOADING_SCREEN_VIDEO_URL = 'https://res.cloudinary.com/defgxcpnk/video/upload/v1782048059/loading_screen_hdhggj.mp4';
 
-const ProfileRoute = () => {
+const ProfileRoute = ({ currentUser }) => {
   const { slug } = useParams();
-  return <Profile key={slug} />;
+  return <Profile key={slug} currentUser={currentUser} />;
 };
 
 function App() {
@@ -88,7 +88,7 @@ function App() {
               <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
               <Route path="/achievements" element={<Achievements user={user} />} />
               <Route path="/leaderboard" element={<Leaderboard user={user} />} />
-              <Route path="/profile/:slug" element={<ProfileRoute />} />
+              <Route path="/profile/:slug" element={<ProfileRoute currentUser={user} />} />
               <Route path="/admin" element={<Admin user={user} />} />
             </Routes>
           <Paimon />

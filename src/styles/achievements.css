@@ -113,6 +113,7 @@
     border-radius: 10px;
     background: rgba(56, 124, 232, 0.12);
     cursor: pointer;
+    min-width: 0;
 }
 
 .achievement-recommendation-item:hover {
@@ -150,6 +151,8 @@
     margin: 3px 0 0;
     color: rgba(180, 210, 255, 0.78);
     font-size: 0.82rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 /* ── Category accordion ─────────────────────────────── */
@@ -658,6 +661,31 @@
 @media (max-width: 640px) {
     .achievement-recommendation-item {
         padding: 10px 12px;
+        flex-wrap: wrap;
+        row-gap: 8px;
+    }
+
+    .achievement-recommendation-item .achievement-item-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .achievement-recommendation-name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: initial;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .achievement-recommendation-item .achievement-item-desc {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .achievement-recommendation-item .achievement-item-points {
+        margin-left: auto;
+        flex-shrink: 0;
     }
 
     .achievement-modal {
