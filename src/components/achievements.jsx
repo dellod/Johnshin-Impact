@@ -1,5 +1,5 @@
 // React libraries
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 // CSS
 import '../styles/achievements.css';
@@ -67,6 +67,20 @@ const getAchievementFields = (achievement, fallbackImage) => {
         points,
         achievers,
     };
+};
+
+const getAchieverCount = (achievement) => {
+    const rawAchievers = achievement.achievedUsersMap || [];
+
+    if (Array.isArray(rawAchievers)) {
+        return rawAchievers.length;
+    }
+
+    if (rawAchievers && typeof rawAchievers === 'object') {
+        return Object.keys(rawAchievers).length;
+    }
+
+    return 0;
 };
 
 const Achievements = ({ user }) => {
@@ -442,14 +456,6 @@ const Achievements = ({ user }) => {
         }
     };
 
-    if (loading) {
-        return <div className="achievements-loading">Loading achievements...</div>;
-    }
-
-    if (fetchError) {
-        return <div className="achievements-error">{fetchError}</div>;
-    }
-
     const claimContent = (
         <>
             {!user ? (
@@ -503,6 +509,127 @@ const Achievements = ({ user }) => {
         </>
     );
 
+    const personalizedRecommendations = useMemo(() => {
+        if (!user) {
+            return [];
+        }
+
+        const allAchievements = CATEGORIES.flatMap((category) =>
+            (achievementsByCategory[category] || []).map((achievement) => ({
+                achievement,
+                category,
+                categoryImage: CATEGORY_IMAGES[category],
+            }))
+        );
+
+        if (allAchievements.length === 0) {
+            return [];
+        }
+
+        const categoryTotals = {};
+        const categoryCompleted = {};
+        let maxPoints = 1;
+
+        allAchievements.forEach(({ achievement, category }) => {
+            const points = Number(achievement.points ?? 0);
+            const safePoints = Number.isNaN(points) ? 0 : points;
+
+            categoryTotals[category] = (categoryTotals[category] || 0) + 1;
+            if (completedAchievementIds[achievement.id]) {
+                categoryCompleted[category] = (categoryCompleted[category] || 0) + 1;
+            }
+
+            if (safePoints > maxPoints) {
+                maxPoints = safePoints;
+            }
+        });
+
+        const candidates = allAchievements
+            .filter(({ achievement }) => !completedAchievementIds[achievement.id] && !pendingClaimIds[achievement.id])
+            .map(({ achievement, category, categoryImage }) => {
+                const points = Number(achievement.points ?? 0);
+                const safePoints = Number.isNaN(points) ? 0 : points;
+                const achieverCount = getAchieverCount(achievement);
+                const completionRate = totalUsersCount > 0 ? achieverCount / totalUsersCount : 0;
+                const categoryCompletionRate = categoryTotals[category] > 0
+                    ? (categoryCompleted[category] || 0) / categoryTotals[category]
+                    : 0;
+
+                // A higher category gap means the user has less progress in this category.
+                const categoryGap = 1 - categoryCompletionRate;
+                const normalizedPoints = safePoints / maxPoints;
+
+                return {
+                    id: achievement.id,
+                    achievement,
+                    category,
+                    categoryImage,
+                    points: safePoints,
+                    achieverCount,
+                    completionRate,
+                    categoryGap,
+                    quickWinScore: (completionRate * 0.7) + ((1 - normalizedPoints) * 0.3),
+                    valueScore: (normalizedPoints * 0.65) + ((1 - completionRate) * 0.35),
+                    categoryScore: (categoryGap * 0.75) + ((1 - completionRate) * 0.25),
+                };
+            });
+
+        if (candidates.length === 0) {
+            return [];
+        }
+
+        const usedIds = new Set();
+        const picks = [];
+
+        const pickBest = (scoreKey, reason) => {
+            const candidate = candidates
+                .filter((item) => !usedIds.has(item.id))
+                .sort((left, right) => right[scoreKey] - left[scoreKey])[0];
+
+            if (!candidate) {
+                return;
+            }
+
+            usedIds.add(candidate.id);
+            picks.push({
+                ...candidate,
+                reason,
+            });
+        };
+
+        pickBest('quickWinScore', 'Quick Win');
+        pickBest('valueScore', 'High Value');
+        pickBest('categoryScore', 'Category Catch-up');
+
+        if (picks.length < 3) {
+            candidates
+                .filter((item) => !usedIds.has(item.id))
+                .sort((left, right) => {
+                    const leftBlended = (left.quickWinScore + left.valueScore + left.categoryScore) / 3;
+                    const rightBlended = (right.quickWinScore + right.valueScore + right.categoryScore) / 3;
+                    return rightBlended - leftBlended;
+                })
+                .slice(0, 3 - picks.length)
+                .forEach((item) => {
+                    usedIds.add(item.id);
+                    picks.push({
+                        ...item,
+                        reason: 'Recommended Next',
+                    });
+                });
+        }
+
+        return picks.slice(0, 3);
+    }, [user, achievementsByCategory, completedAchievementIds, pendingClaimIds, totalUsersCount]);
+
+    if (loading) {
+        return <div className="achievements-loading">Loading achievements...</div>;
+    }
+
+    if (fetchError) {
+        return <div className="achievements-error">{fetchError}</div>;
+    }
+
     return (
         <div className="achievements-page">
             <h1 className="achievements-title">Achievements</h1>
@@ -516,6 +643,63 @@ const Achievements = ({ user }) => {
                     <span className="achievements-summary-label">Achievements</span>
                 </div>
             </div>
+
+            {user ? (
+                <section className="achievement-recommendations" aria-label="Personalized recommendations">
+                    <h2 className="achievement-recommendations-title">Paimon's Recommendations</h2>
+
+                    {personalizedRecommendations.length === 0 ? (
+                        <p className="achievement-recommendations-empty">
+                            No recommendations right now. You have completed or pending-claimed everything available.
+                        </p>
+                    ) : (
+                        <ul className="achievement-recommendations-list">
+                            {personalizedRecommendations.map((recommendation) => {
+                                const completionPercentage = Math.round(recommendation.completionRate * 100);
+
+                                return (
+                                    <li
+                                        key={recommendation.id}
+                                        className="achievement-recommendation-item"
+                                        onClick={() => openAchievementModal(recommendation.achievement, recommendation.categoryImage)}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' || event.key === ' ') {
+                                                event.preventDefault();
+                                                openAchievementModal(recommendation.achievement, recommendation.categoryImage);
+                                            }
+                                        }}
+                                        role="button"
+                                        tabIndex={0}
+                                    >
+                                        <img
+                                            className="achievement-item-icon"
+                                            src={recommendation.achievement.icon || recommendation.categoryImage}
+                                            alt={`${recommendation.achievement.name || 'Unnamed achievement'} icon`}
+                                        />
+
+                                        <div className="achievement-item-content">
+                                            <div className="achievement-item-title-row">
+                                                <h3 className="achievement-recommendation-name">{recommendation.achievement.name || 'Unnamed achievement'}</h3>
+                                                <span className="achievement-status-badge achievement-recommendation-reason">{recommendation.reason}</span>
+                                            </div>
+                                            <div className="achievement-item-desc">{recommendation.achievement.description || 'No description yet.'}</div>
+                                            <p className="achievement-recommendation-meta">
+                                                {recommendation.achieverCount}/{totalUsersCount} players • {completionPercentage}% completion
+                                            </p>
+                                        </div>
+
+                                        <div className="achievement-item-points" aria-label={`${recommendation.points} points`}>
+                                            <img className="achievement-points-icon" src={PointsIcon} alt="" aria-hidden="true" />
+                                            {recommendation.points}
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+                </section>
+            ) : null}
+
             <div className="achievements-list">
                 {CATEGORIES.map((category) => {
                     const isOpen = Boolean(openCategories[category]);

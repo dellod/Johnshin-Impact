@@ -71,6 +71,87 @@
     gap: 12px;
 }
 
+.achievement-recommendations {
+    width: 100%;
+    max-width: 720px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(124, 177, 242, 0.38);
+    border-radius: 12px;
+    background: rgba(9, 27, 56, 0.45);
+    backdrop-filter: blur(4px);
+    padding: 14px;
+    box-sizing: border-box;
+}
+
+.achievement-recommendations-title {
+    margin: 0 0 10px;
+    color: #eef7ff;
+    font-family: 'Neuton', serif;
+    font-size: 1.25rem;
+}
+
+.achievement-recommendations-empty {
+    margin: 0;
+    color: rgba(176, 213, 255, 0.78);
+    font-size: 0.9rem;
+}
+
+.achievement-recommendations-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.achievement-recommendation-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1px solid rgba(124, 177, 242, 0.28);
+    border-radius: 10px;
+    background: rgba(56, 124, 232, 0.12);
+    cursor: pointer;
+}
+
+.achievement-recommendation-item:hover {
+    background: rgba(56, 124, 232, 0.18);
+}
+
+.achievement-recommendation-item:focus-visible {
+    outline: 2px solid rgba(186, 222, 255, 0.9);
+    outline-offset: 2px;
+}
+
+.achievement-recommendation-main {
+    min-width: 0;
+}
+
+.achievement-recommendation-reason {
+    background: rgba(120, 186, 255, 0.2);
+    border-color: rgba(170, 216, 255, 0.5);
+    color: #dff0ff;
+    font-size: 0.74rem;
+}
+
+.achievement-recommendation-name {
+    margin: 0;
+    color: #ffffff;
+    font-family: 'Neuton', serif;
+    font-size: 1.03rem;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.achievement-recommendation-meta {
+    margin: 3px 0 0;
+    color: rgba(180, 210, 255, 0.78);
+    font-size: 0.82rem;
+}
+
 /* ── Category accordion ─────────────────────────────── */
 
 .achievement-category {
@@ -575,6 +656,10 @@
 }
 
 @media (max-width: 640px) {
+    .achievement-recommendation-item {
+        padding: 10px 12px;
+    }
+
     .achievement-modal {
         padding: 18px 14px;
     }
