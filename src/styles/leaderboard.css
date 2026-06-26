@@ -18,6 +18,58 @@
         0 0 28px rgba(80, 140, 255, 0.35);
 }
 
+.leaderboard-groups {
+    display: grid;
+    gap: 0;
+}
+
+.leaderboard-group-label {
+    padding: 8px 20px;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.leaderboard-group-label-safe {
+    color: rgba(210, 236, 255, 0.9);
+    border-bottom: 1px solid rgba(124, 177, 242, 0.2);
+    background: linear-gradient(90deg, rgba(77, 144, 232, 0.16), rgba(77, 144, 232, 0.02));
+}
+
+.leaderboard-group-at-risk {
+    margin-top: 10px;
+    border-top: 1px dashed rgba(124, 177, 242, 0.35);
+    padding-top: 8px;
+}
+
+.leaderboard-group-label-risk {
+    color: rgba(236, 210, 210, 0.85);
+    border-bottom: 1px solid rgba(165, 131, 131, 0.22);
+    background: linear-gradient(90deg, rgba(133, 74, 74, 0.18), rgba(133, 74, 74, 0.03));
+}
+
+.leaderboard-item-safe {
+    background: rgba(77, 144, 232, 0.1);
+}
+
+.leaderboard-item-safe:hover {
+    background: rgba(77, 144, 232, 0.16);
+}
+
+.leaderboard-rank-safe-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    border-radius: 999px;
+    padding: 1px 6px;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    background: rgba(120, 186, 255, 0.2);
+    border: 1px solid rgba(170, 216, 255, 0.5);
+    color: #dff0ff;
+}
+
 .leaderboard-container {
     width: min(900px, 100%);
     border-radius: 14px;
@@ -239,6 +291,15 @@
 }
 
 @media (max-width: 700px) {
+    .leaderboard-group-label {
+        padding: 8px 14px;
+    }
+
+    .leaderboard-group-at-risk {
+        margin-top: 8px;
+        padding-top: 6px;
+    }
+
     .leaderboard-container {
         border-radius: 12px;
     }

@@ -107,6 +107,67 @@ const Leaderboard = ({ user }) => {
         );
     }
 
+    const safePlayers = leaderboardData.slice(0, 8);
+    const atRiskPlayers = leaderboardData.slice(8);
+
+    const renderLeaderboardRow = (leaderboardUser, rank) => {
+        const isCurrentUser = user && user.uid === leaderboardUser.id;
+        const isSafe = rank <= 8;
+        const medal = getMedalEmoji(rank);
+        const adventureRank = getAdventureRank(leaderboardUser.points);
+        const ascensionPhase = getAscensionPhase(adventureRank);
+
+        return (
+            <li
+                key={leaderboardUser.id}
+                className={`leaderboard-item ${isCurrentUser ? 'leaderboard-item-current' : ''} ${isSafe ? 'leaderboard-item-safe' : ''}`}
+            >
+                <div className="leaderboard-rank">
+                    {medal ? <span className="leaderboard-rank-medal">{medal}</span> : null}
+                    <span>{rank}</span>
+                </div>
+
+                <div className="leaderboard-user-info">
+                    <Link to={`/profile/${leaderboardUser.id}`} className="leaderboard-username-link">
+                        {leaderboardUser.photoUrl ? (
+                            <img
+                                src={leaderboardUser.photoUrl}
+                                alt={`${leaderboardUser.username} profile`}
+                                className="leaderboard-avatar"
+                            />
+                        ) : (
+                            <span
+                                className="leaderboard-avatar-fallback"
+                                aria-hidden="true"
+                            >
+                                {((leaderboardUser.username || '').slice(0, 1).toUpperCase()) || '?'}
+                            </span>
+                        )}
+                    </Link>
+
+                    <div className="leaderboard-user-meta">
+                        <Link to={`/profile/${leaderboardUser.id}`} className="leaderboard-username-link">
+                            <span className="leaderboard-username">{leaderboardUser.username}</span>
+                        </Link>
+                        <div className="leaderboard-ar-info" aria-label={`Adventure Rank ${adventureRank}, Ascension phase ${ascensionPhase}`}>
+                            <span className="leaderboard-ar-rank">AR {adventureRank}</span>
+                            <div className="leaderboard-ar-stars" aria-hidden="true">
+                                {Array.from({ length: 6 }, (_, i) => (
+                                    <span key={i} className={`leaderboard-ar-star${i < ascensionPhase ? ' leaderboard-ar-star--filled' : ' leaderboard-ar-star--empty'}`}>✦</span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="leaderboard-points" aria-label={`Points ${leaderboardUser.points}`}>
+                    <img className="leaderboard-points-icon" src={PointsIcon} alt="" aria-hidden="true" />
+                    {leaderboardUser.points}
+                </div>
+            </li>
+        );
+    };
+
     return (
         <div className="leaderboard-page">
             <h1 className="leaderboard-title">Leaderboard</h1>
@@ -121,65 +182,23 @@ const Leaderboard = ({ user }) => {
                         <div className="leaderboard-header-points">Points</div>
                     </div>
 
-                    <ul className="leaderboard-list">
-                        {leaderboardData.map((leaderboardUser, index) => {
-                            const rank = index + 1;
-                            const isCurrentUser = user && user.uid === leaderboardUser.id;
-                            const medal = getMedalEmoji(rank);
-                            const adventureRank = getAdventureRank(leaderboardUser.points);
-                            const ascensionPhase = getAscensionPhase(adventureRank);
+                    <div className="leaderboard-groups">
+                        <section className="leaderboard-group" aria-label="Safe zone players">
+                            <div className="leaderboard-group-label leaderboard-group-label-safe">Safe (Top 8)</div>
+                            <ul className="leaderboard-list">
+                                {safePlayers.map((leaderboardUser, index) => renderLeaderboardRow(leaderboardUser, index + 1))}
+                            </ul>
+                        </section>
 
-                            return (
-                                <li
-                                    key={leaderboardUser.id}
-                                    className={`leaderboard-item ${isCurrentUser ? 'leaderboard-item-current' : ''}`}
-                                >
-                                    <div className="leaderboard-rank">
-                                        {medal ? <span className="leaderboard-rank-medal">{medal}</span> : null}
-                                        <span>{rank}</span>
-                                    </div>
-
-                                    <div className="leaderboard-user-info">
-                                        <Link to={`/profile/${leaderboardUser.id}`} className="leaderboard-username-link">
-                                            {leaderboardUser.photoUrl ? (
-                                                <img
-                                                    src={leaderboardUser.photoUrl}
-                                                    alt={`${leaderboardUser.username} profile`}
-                                                    className="leaderboard-avatar"
-                                                />
-                                            ) : (
-                                                <span
-                                                    className="leaderboard-avatar-fallback"
-                                                    aria-hidden="true"
-                                                >
-                                                    {((leaderboardUser.username || '').slice(0, 1).toUpperCase()) || '?'}
-                                                </span>
-                                            )}
-                                        </Link>
-
-                                        <div className="leaderboard-user-meta">
-                                            <Link to={`/profile/${leaderboardUser.id}`} className="leaderboard-username-link">
-                                                <span className="leaderboard-username">{leaderboardUser.username}</span>
-                                            </Link>
-                                            <div className="leaderboard-ar-info" aria-label={`Adventure Rank ${adventureRank}, Ascension phase ${ascensionPhase}`}>
-                                                <span className="leaderboard-ar-rank">AR {adventureRank}</span>
-                                                <div className="leaderboard-ar-stars" aria-hidden="true">
-                                                    {Array.from({ length: 6 }, (_, i) => (
-                                                        <span key={i} className={`leaderboard-ar-star${i < ascensionPhase ? ' leaderboard-ar-star--filled' : ' leaderboard-ar-star--empty'}`}>✦</span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="leaderboard-points" aria-label={`Points ${leaderboardUser.points}`}>
-                                        <img className="leaderboard-points-icon" src={PointsIcon} alt="" aria-hidden="true" />
-                                        {leaderboardUser.points}
-                                    </div>
-                                </li>
-                            );
-                        })}
-                    </ul>
+                        {atRiskPlayers.length > 0 ? (
+                            <section className="leaderboard-group leaderboard-group-at-risk" aria-label="At risk players">
+                                <div className="leaderboard-group-label leaderboard-group-label-risk">The Mercy of John</div>
+                                <ul className="leaderboard-list">
+                                    {atRiskPlayers.map((leaderboardUser, index) => renderLeaderboardRow(leaderboardUser, index + 9))}
+                                </ul>
+                            </section>
+                        ) : null}
+                    </div>
                 </div>
             )}
         </div>
